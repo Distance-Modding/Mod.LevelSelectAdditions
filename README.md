@@ -1,16 +1,16 @@
-# Distance mod template
+# Distance Level Select Additions
 
-Use this repository as a base to create your own Distance mods.
+Distance mod that extends the level selection UI by adding more options.
 
-# Using the template
-On github, click the `Use this template` button to create a new repository based on this one
+## Current Options
 
-Once the repository is created, be sure to clone it locally **with submodules**:
-```sh
-git clone --recurse-submodules -j8 <your project .git url>
-```
+* Exclude levels in personal playlists from the Workshop Level Set.
+* Remove or change the limit to levels in the Workshop Level Set (original limit was 100).
+* Apply up to 3 layers of sorting to the Workshop Level Set (each method can be reversed).
+    * Recently Downloaded (default)
+	* Level Name
+	* Author Name
+	* Difficulty
+	* Finish Status
+	* Medals Earned
 
-# Setting up the project
-After cloning the repository on your local drive, run the [setup.ps1](setup.ps1) script using [PowerShell 7 or higher](https://github.com/PowerShell/PowerShell#get-powershell).
-
-This script will rename the files correctly and replace their content to match your mod name.

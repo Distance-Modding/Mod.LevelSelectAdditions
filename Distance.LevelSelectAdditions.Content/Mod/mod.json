@@ -1,0 +1,14 @@
+﻿{
+	"FriendlyName": "Level Select Additions",
+	"Description": "Extends the level selection UI by adding more options.",
+	"Author": "trigger_segfault",
+	"Contact": "Github: @trigger-segfault; Discord: trigger_segfault#7281",
+	"ModuleFileName": "Distance.LevelSelectAdditions.dll",
+	"RequiredGSLs": [
+		"com.github.reherc/Centrifuge.Distance"
+	],
+	"SkipLoad": false,
+	"Priority": 10
+}
+
+
