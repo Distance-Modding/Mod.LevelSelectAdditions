@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Distance.LevelSelectAdditions.Sorting;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace Distance.LevelSelectAdditions.Harmony
 	[HarmonyPatch(typeof(LevelGridMenu), nameof(LevelGridMenu.CreateAndAddLevelSet))]
 	internal static class LevelGridMenu__CreateAndAddLevelSet
 	{
-
+		[HarmonyPrefix]
 		internal static bool Prefix(LevelGridMenu __instance, LevelSet set, string name, LevelGridMenu.PlaylistEntry.Type type, LevelGroupFlags flags)
 		{
 			// Only perform special handling for Workshop LevelSets (since that's all that's currently supported).

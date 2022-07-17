@@ -5,7 +5,7 @@ using UnityEngine;
 
 using SortingMethod = LevelSelectMenuLogic.SortingMethod;
 
-namespace Distance.LevelSelectAdditions
+namespace Distance.LevelSelectAdditions.Sorting
 {
 	public class LevelSort
 	{

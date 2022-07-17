@@ -1,6 +1,10 @@
 ﻿using Centrifuge.Distance.Game;
 using Centrifuge.Distance.GUI.Controls;
 using Centrifuge.Distance.GUI.Data;
+using Distance.LevelSelectAdditions.Extensions;
+using Distance.LevelSelectAdditions.Scripts;
+using Distance.LevelSelectAdditions.Scripts.Menus;
+using Distance.LevelSelectAdditions.Sorting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +13,7 @@ using Reactor.API.Interfaces.Systems;
 using Reactor.API.Logging;
 using Reactor.API.Runtime.Patching;
 using UnityEngine;
+using System.Reflection;
 
 using SortingMethod = LevelSelectMenuLogic.SortingMethod;
 
@@ -24,6 +29,8 @@ namespace Distance.LevelSelectAdditions
 		public const string FullName = "Distance." + Name;
 		public const string FriendlyName = "Level Select Additions";
 
+		public const bool BasicLevelSetOptionsSupported = false;
+
 
 		public static Mod Instance { get; private set; }
 
@@ -32,6 +39,11 @@ namespace Distance.LevelSelectAdditions
 		public Log Logger { get; private set; }
 
 		public ConfigurationLogic Config { get; private set; }
+
+
+		public LevelSetOptionsMenu LevelSetOptionsMenu { get; internal set; }
+
+		public OptionsMenuLogic OptionsMenu { get; internal set; }
 
 		/// <summary>
 		/// Method called as soon as the mod is loaded.
@@ -49,9 +61,24 @@ namespace Distance.LevelSelectAdditions
 			Manager = manager;
 
 			Logger = LogManager.GetForCurrentAssembly();
+			Logger.Info(Mod.Name + ": Initializing...");
+
 			Config = gameObject.AddComponent<ConfigurationLogic>();
 
-			Logger.Info(Mod.Name + ": Initializing...");
+			try
+			{
+				// Never ever EVER use this!!!
+				// It's the same as below (with `GetCallingAssembly`) wrapped around a silent catch-all.
+				//RuntimePatcher.AutoPatch();
+
+				RuntimePatcher.HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(Mod.Name + ": Error during Harmony.PatchAll()");
+				Logger.Exception(ex);
+				throw;
+			}
 
 			try
 			{
@@ -60,17 +87,6 @@ namespace Distance.LevelSelectAdditions
 			catch (Exception ex)
 			{
 				Logger.Error(Mod.Name + ": Error during CreateSettingsMenu()");
-				Logger.Exception(ex);
-				throw;
-			}
-
-			try
-			{
-				RuntimePatcher.AutoPatch();
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(Mod.Name + ": Error during RuntimePatcher.AutoPatch()");
 				Logger.Exception(ex);
 				throw;
 			}
@@ -172,6 +188,14 @@ namespace Distance.LevelSelectAdditions
 				() => Config.WorkshopReverseSortingMethod3,
 				(value) => Config.WorkshopReverseSortingMethod3 = value,
 				description: "Reverse the order of the third Workshop sorting method.");
+
+
+			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
+				"setting:levelsets_enable_extra_sprint_campaigns",
+				"ENABLE EXTRA SPRINT CAMPAIGNS",
+				() => Config.EnableTheOtherSideSprintCampaign,
+				(value) => Config.EnableTheOtherSideSprintCampaign = value,
+				description: "Shows extra sprint campaign level sets that aren't normally available (requires unlock).");
 
 
 			Menus.AddNew(MenuDisplayMode.MainMenu, settingsMenu,

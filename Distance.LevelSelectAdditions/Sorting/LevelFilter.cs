@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Distance.LevelSelectAdditions
+namespace Distance.LevelSelectAdditions.Sorting
 {
 	public class LevelFilter
 	{
@@ -65,7 +65,7 @@ namespace Distance.LevelSelectAdditions
 					LevelPlaylist personalPlaylist = LevelGridMenu.LoadPlaylist(absolutePath);
 					if (!levelPlaylist)
 					{
-						Mod.Instance.Logger.Info("Failed to load: " + absolutePath);
+						Mod.Instance.Logger.Warning("Failed to load: " + absolutePath);
 						continue;
 					}
 					if (personalPlaylist.Count_ == 0)

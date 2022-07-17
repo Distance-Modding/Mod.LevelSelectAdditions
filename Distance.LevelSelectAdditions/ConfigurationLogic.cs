@@ -1,4 +1,6 @@
-﻿using Reactor.API.Configuration;
+﻿using Distance.LevelSelectAdditions.Events;
+using Distance.LevelSelectAdditions.Sorting;
+using Reactor.API.Configuration;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -97,6 +99,32 @@ namespace Distance.LevelSelectAdditions
 			set => Set(RecentDownloadsLevelLimit_ID, value);
 		}*/
 
+
+
+		private const string EnableTheOtherSideSprintCampaign_ID = "levelsets.enable_extra_sprint_campaigns";
+		public bool EnableTheOtherSideSprintCampaign
+		{
+			get => Get<bool>(EnableTheOtherSideSprintCampaign_ID);
+			set => Set(EnableTheOtherSideSprintCampaign_ID, value);
+		}
+
+		/*private const string LevelSetSettingsTable_ID = "levelsets.options";
+		public Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>> LevelSetSettingsTable
+		{
+			get => Convert(LevelSetSettingsTable_ID, new Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>>(), overwriteNull: true);
+			set => Set(LevelSetSettingsTable_ID, value);
+		}*/
+
+		private const string State_LastLevelSets_ID = "state.last_levelsets";
+		public Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>> State_LastLevelSetIDs
+		{
+			get => Convert(State_LastLevelSets_ID, new Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>>(), overwriteNull: true);
+			set => Set(State_LastLevelSets_ID, value);
+		}
+
+		// No config option for this yet
+		public bool EnableLevelSetOptionsMenu => true;
+
 		#endregion
 
 		#region Helpers
@@ -110,6 +138,7 @@ namespace Distance.LevelSelectAdditions
 				WorkshopSortingMethod3,
 			};
 		}
+
 		public bool[] GetWorkshopReverseSortingMethods()
 		{
 			return new bool[]
@@ -118,6 +147,30 @@ namespace Distance.LevelSelectAdditions
 				WorkshopReverseSortingMethod2,
 				WorkshopReverseSortingMethod3,
 			};
+		}
+
+		public string GetStateLastLevelSetID(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID)
+		{
+			if (State_LastLevelSetIDs.TryGetValue(displayType, out var lastPlaylists_mode))
+			{
+				if (lastPlaylists_mode.TryGetValue(modeID, out string pathName))
+				{
+					return pathName;
+				}
+			}
+			return null;
+		}
+
+		public void SetStateLastLevelSetID(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID, string pathName)
+		{
+			var lastPlaylists_display = State_LastLevelSetIDs;
+			if (!lastPlaylists_display.TryGetValue(displayType, out Dictionary<GameModeID, string> lastPlaylists_mode))
+			{
+				lastPlaylists_mode = new Dictionary<GameModeID, string>();
+				lastPlaylists_display[displayType] = lastPlaylists_mode;
+			}
+			lastPlaylists_mode[modeID] = pathName;
+			this.Save(); // auto save
 		}
 
 		#endregion
@@ -131,8 +184,47 @@ namespace Distance.LevelSelectAdditions
 			Config = new Settings("Config");// Mod.FullName);
 		}
 
+		private void OnPlaylistFileRenamed(PlaylistFileRenamed.Data data)
+		{
+			var lastPlaylists_display = State_LastLevelSetIDs;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var displayPair in lastPlaylists_display.ToArray())
+			{
+				foreach (var modePair in displayPair.Value.ToArray())
+				{
+					if (modePair.Value == data.oldLevelSetID)
+					{
+						lastPlaylists_display[displayPair.Key][modePair.Key] = data.newLevelSetID;
+					}
+				}
+			}
+
+			//TODO: When LevelSetOptions dictionary gets added, enumerate over and rename here too.
+		}
+
+		private void OnPlaylistFileDeleted(PlaylistFileDeleted.Data data)
+		{
+			var lastPlaylists_display = State_LastLevelSetIDs;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var displayPair in lastPlaylists_display.ToArray())
+			{
+				foreach (var modePair in displayPair.Value.ToArray())
+				{
+					if (modePair.Value == data.levelSetID)
+					{
+						lastPlaylists_display[displayPair.Key][modePair.Key] = null;
+					}
+				}
+			}
+
+			//TODO: When LevelSetOptions dictionary gets added, enumerate over and delete here too.
+		}
+
 		public void Awake()
 		{
+			PlaylistFileRenamed.Subscribe(OnPlaylistFileRenamed);
+			PlaylistFileDeleted.Subscribe(OnPlaylistFileDeleted);
+
 			Load();
 
 			// Assign default settings (if not already assigned).
@@ -144,6 +236,7 @@ namespace Distance.LevelSelectAdditions
 			Get(WorkshopReverseSortingMethod_ID, false);
 			Get(WorkshopReverseSortingMethod2_ID, false);
 			Get(WorkshopReverseSortingMethod3_ID, false);
+			Get(EnableTheOtherSideSprintCampaign_ID, false);
 
 			// Save settings, and any defaults that may have been added.
 			Save();
@@ -152,6 +245,19 @@ namespace Distance.LevelSelectAdditions
 		public T Get<T>(string key, T @default = default)
 		{
 			return Config.GetOrCreate(key, @default);
+		}
+
+		public T Convert<T>(string key, T @default = default, bool overwriteNull = false)
+		{
+			// Assign the object back after conversion, this allows for deep nested settings
+			//  that can be preserved and updated without reassigning to the root property.
+			var value = Config.GetOrCreate(key, @default);
+			if (overwriteNull && value == null)
+			{
+				value = @default;
+			}
+			Config[key] = value;
+			return value;
 		}
 
 		public void Set<T>(string key, T value)
