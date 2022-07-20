@@ -34,6 +34,15 @@ namespace Distance.LevelSelectAdditions.Harmony
 					__instance.searchInput_.OnSelect(false);
 				}
 			}
+
+			// Don't implement this until Playlist Mode is ready,
+			//  since we'll want to make the this visible for the "REMOVE LEVEL" button.
+			/*if (Mod.Instance.Config.HideChooseMainMenuUnusedButtons)
+			{
+				// Keep the Playlist Mode button, since there are plans to restore that functionality for Choose Main Menu levels.
+				bool isMainMenu = __instance.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
+				__instance.showLeaderboardsButton_.SetActive(!isMainMenu);
+			}*/
 		}
 	}
 }

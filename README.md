@@ -11,6 +11,7 @@ Distance mod that extends the level selection UI by adding more options.
 	* Delete Playlist File
 * Remember the last-accessed level set/playlist, so that the game will return to your original place after playing a level appearing in multiple playlists.
 * Fix scrolling bug in level list where you could only scroll to the very top or bottom entry.
+* Make the Visit Workshop page button visible when Choosing Main Menu levels.
 
 ## Current Options
 

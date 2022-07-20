@@ -127,6 +127,10 @@ namespace Distance.LevelSelectAdditions
 
 		public bool FixLevelSelectScrollBug => true;
 
+		public bool EnableChooseMainMenuVisitWorkshopButton => true;
+
+		public bool HideChooseMainMenuUnusedButtons => true;
+
 		#endregion
 
 		#region Helpers

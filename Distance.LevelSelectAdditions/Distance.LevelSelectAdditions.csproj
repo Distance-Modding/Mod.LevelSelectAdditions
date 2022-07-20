@@ -108,6 +108,7 @@
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\Initialize.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\OnLevelPlaylistMenuClickLoad.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\OnLevelPlaylistMenuClickSave.cs" />
+    <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\SetDisplayedInfoForSelectedLevel.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\SetupLevelPlaylistVisuals.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\Start.cs" />
     <Compile Include="Harmony\Assembly-CSharp\OptionsMenuLogic\GetSubmenus.cs" />
