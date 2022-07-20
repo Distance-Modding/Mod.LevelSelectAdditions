@@ -105,6 +105,7 @@
     <Compile Include="Harmony\Assembly-CSharp\LevelPlaylist\Load.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelPlaylist\Save.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\ClearTempPlaylist.cs" />
+    <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\Initialize.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\OnLevelPlaylistMenuClickLoad.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\OnLevelPlaylistMenuClickSave.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelSelectMenuLogic\SetupLevelPlaylistVisuals.cs" />

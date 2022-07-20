@@ -122,8 +122,10 @@ namespace Distance.LevelSelectAdditions
 			set => Set(State_LastLevelSets_ID, value);
 		}
 
-		// No config option for this yet
+		// No config option for these yet
 		public bool EnableLevelSetOptionsMenu => true;
+
+		public bool FixLevelSelectScrollBug => true;
 
 		#endregion
 

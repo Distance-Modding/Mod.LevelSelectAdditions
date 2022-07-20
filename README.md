@@ -10,6 +10,7 @@ Distance mod that extends the level selection UI by adding more options.
 	* Rename Playlist File
 	* Delete Playlist File
 * Remember the last-accessed level set/playlist, so that the game will return to your original place after playing a level appearing in multiple playlists.
+* Fix scrolling bug in level list where you could only scroll to the very top or bottom entry.
 
 ## Current Options
 
@@ -23,4 +24,9 @@ Distance mod that extends the level selection UI by adding more options.
 	* Finish Status
 	* Medals Earned
 * Show hidden sprint campaign level sets.
+
+## Known Bugs
+
+* The Quick Playlist label can sometimes keep the last-used name.
+* The file name for the Save Quick Playlist prompt will also sometimes keep the last-used name.
 
