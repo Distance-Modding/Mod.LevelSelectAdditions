@@ -2,7 +2,6 @@
 using Distance.LevelSelectAdditions.Sorting;
 using Reactor.API.Configuration;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -108,6 +107,49 @@ namespace Distance.LevelSelectAdditions
 			set => Set(EnableTheOtherSideSprintCampaign_ID, value);
 		}
 
+
+		private const string EnableLevelSetOptionsMenu_ID = "levelsets.enable_levelsets_options_menu";
+		public bool EnableLevelSetOptionsMenu
+		{
+			get => Get<bool>(EnableLevelSetOptionsMenu_ID);
+			set => Set(EnableLevelSetOptionsMenu_ID, value);
+		}
+
+		private const string EnableChooseMainMenuQuickPlaylist_ID = "levelsets.enable_choose_mainmenu_quick_playlist";
+		public bool EnableChooseMainMenuQuickPlaylist
+		{
+			get => Get<bool>(EnableChooseMainMenuQuickPlaylist_ID);
+			set => Set(EnableChooseMainMenuQuickPlaylist_ID, value);
+		}
+
+		private const string EnableChooseMainMenuVisitWorkshopButton_ID = "gui.enable_choose_mainmenu_workshop_button";
+		public bool EnableChooseMainMenuVisitWorkshopButton
+		{
+			get => Get<bool>(EnableChooseMainMenuVisitWorkshopButton_ID);
+			set => Set(EnableChooseMainMenuVisitWorkshopButton_ID, value);
+		}
+
+		private const string EnableRateWorkshopLevelButton_ID = "gui.enable_rate_workshop_level_button";
+		public bool EnableRateWorkshopLevelButton
+		{
+			get => Get<bool>(EnableRateWorkshopLevelButton_ID);
+			set => Set(EnableRateWorkshopLevelButton_ID, value);
+		}
+
+		private const string HideChooseMainMenuUnusedButtons_ID = "gui.hide_choose_mainmenu_unused_buttons";
+		public bool HideChooseMainMenuUnusedButtons
+		{
+			get => Get<bool>(HideChooseMainMenuUnusedButtons_ID);
+			set => Set(HideChooseMainMenuUnusedButtons_ID, value);
+		}
+
+		/*private const string FixLevelSelectScrollBug_ID = "gui.fix_level_select_scroll_bug";
+		public bool FixLevelSelectScrollBug
+		{
+			get => Get<bool>(FixLevelSelectScrollBug_ID);
+			set => Set(FixLevelSelectScrollBug_ID, value);
+		}*/
+
 		/*private const string LevelSetSettingsTable_ID = "levelsets.options";
 		public Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>> LevelSetSettingsTable
 		{
@@ -121,15 +163,6 @@ namespace Distance.LevelSelectAdditions
 			get => Convert(State_LastLevelSets_ID, new Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>>(), overwriteNull: true);
 			set => Set(State_LastLevelSets_ID, value);
 		}
-
-		// No config option for these yet
-		public bool EnableLevelSetOptionsMenu => true;
-
-		public bool FixLevelSelectScrollBug => true;
-
-		public bool EnableChooseMainMenuVisitWorkshopButton => true;
-
-		public bool HideChooseMainMenuUnusedButtons => true;
 
 		#endregion
 
@@ -243,6 +276,13 @@ namespace Distance.LevelSelectAdditions
 			Get(WorkshopReverseSortingMethod2_ID, false);
 			Get(WorkshopReverseSortingMethod3_ID, false);
 			Get(EnableTheOtherSideSprintCampaign_ID, false);
+
+			Get(EnableLevelSetOptionsMenu_ID, true);
+			Get(EnableChooseMainMenuQuickPlaylist_ID, true);
+			Get(EnableChooseMainMenuVisitWorkshopButton_ID, true);
+			Get(EnableRateWorkshopLevelButton_ID, true);
+			Get(HideChooseMainMenuUnusedButtons_ID, true);
+			//Get(FixLevelSelectScrollBug_ID, true); // Always enable this fix
 
 			// Save settings, and any defaults that may have been added.
 			Save();

@@ -21,19 +21,9 @@ namespace Distance.LevelSelectAdditions.Harmony
 		{
 			if (__instance.type_ == LevelGridMenu.PlaylistEntry.Type.Personal)
 			{
-				if (__instance.playlist_.GetColor(out bool colorTag, out _, false))
+				if (__instance.playlist_.GetBaseColor(out Color baseColor, false))
 				{
-					if (colorTag)
-					{
-						// Otherwise we'll return the normal color, which is multiplied against the base color tags.
-						// This will keep color tags used without this mod consistent.
-						__result = Color.white;
-					}
-					else
-					{
-						// Color functions in vanilla by multiplying against the personal playlist color.
-						__result = GConstants.myLevelColor_;
-					}
+					__result = baseColor;
 				}
 			}
 		}

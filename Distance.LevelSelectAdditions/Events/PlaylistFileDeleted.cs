@@ -16,7 +16,7 @@ namespace Distance.LevelSelectAdditions.Events
 			{
 				this.filePath = oldFilePath;
 				this.levelSetID = oldLevelSetID;
-				this.name = oldLevelSetID;
+				this.name = name;
 			}
 		}
 	}

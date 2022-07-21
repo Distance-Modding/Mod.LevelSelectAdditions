@@ -92,20 +92,11 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		// Displays the playlist name below the menu title.
 		protected void UpdateMenuDescription()
 		{
-			Color color = Color.white;
-			bool colorTag = this.playlist_.Name_.DecodeNGUIColorTag(out _);
-			if (!colorTag)
+			Color baseColor = Color.white;
+			var playlistData = this.playlist_.GetComponent<LevelPlaylistCompoundData>();
+			if (playlistData?.PlaylistEntry != null)
 			{
-				// No color tag, so we need to use the multiplier color.
-				var playlistData = this.playlist_.GetComponent<LevelPlaylistCompoundData>();
-				if (playlistData?.PlaylistEntry != null)
-				{
-					color = playlistData.PlaylistEntry.Color_;
-				}
-				else
-				{
-					color = GConstants.myLevelColor_;
-				}
+				baseColor = playlistData.PlaylistEntry.Color_;
 			}
 
 			UILabel titleLabelObject = this.TitleLabel.GetComponent<UILabel>();
@@ -114,7 +105,7 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 			this.DescriptionLabel?.SetActive(true);
 
 			descriptionLabelObject.text = this.playlist_.Name_;
-			descriptionLabelObject.color = color;
+			descriptionLabelObject.color = baseColor;
 
 			// Use same font as playlist entries in Level Sets menu.
 			descriptionLabelObject.fontStyle = titleLabelObject.fontStyle; // FontStyle.Normal;

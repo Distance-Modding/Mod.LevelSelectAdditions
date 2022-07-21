@@ -25,18 +25,17 @@ namespace Distance.LevelSelectAdditions.Harmony
 
 
 			// If our playlist is unnamed, then assign a display name based on the file name.
-			string newName = __instance.tempPlaylist_.Name_;
-			if (newName.IsEmptyPlaylistName())
+			if (__instance.tempPlaylist_.Name_.IsEmptyPlaylistName())
 			{
-				newName = Resource.GetFileNameWithoutExtension(absolutePath);
+				string newName = Resource.GetFileNameWithoutExtension(absolutePath);
 				__instance.tempPlaylist_.Name_ = newName;
 
-				__instance.quickPlaylistLabel_.text = newName; // Update the label showing the playlist name
+				__instance.UpdateQuickPlaylistText();
 
 				Mod.Instance.Logger.Debug($"Saving playlist New Name:  " + (newName  != null ? $"\"{newName}\"" : "null"));
 			}
 
-			var playlistData = __instance.tempPlaylist_.gameObject.GetOrAddComponent<LevelPlaylistCompoundData>();
+			var playlistData = __instance.tempPlaylist_.GetComponent<LevelPlaylistCompoundData>();
 			if (playlistData)
 			{
 				playlistData.FilePath = absolutePath;

@@ -1,5 +1,4 @@
 ﻿using Distance.LevelSelectAdditions.Extensions;
-using Distance.LevelSelectAdditions.Scripts;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,20 +12,27 @@ namespace Distance.LevelSelectAdditions.Harmony
 	/// <para/>
 	/// Also includes patch to make the Visit Workshop page button visible for the Choose Main Menu display type
 	/// (when first opening the level select menu).
+	/// <para/>
+	/// Also includes patch to hide the Start Playlist button when in Playlist Mode for the Choose Main Menu display type.
+	/// <para/>
+	/// Also includes patch to hide unused Leaderboards (and optionally Playlist Mode) buttons when in the Choose Main Menu display type.
 	/// </summary>
 	[HarmonyPatch(typeof(LevelSelectMenuLogic), nameof(LevelSelectMenuLogic.SetupLevelPlaylistVisuals))]
 	internal static class LevelSelectMenuLogic__SetupLevelPlaylistVisuals
 	{
+		[HarmonyPrefix]
+		internal static void Prefix(LevelSelectMenuLogic __instance)
+		{
+			// We *might* be entering Playlist Mode, so we need to re-evaluate bottom left button visibility.
+			__instance.UpdateBottomLeftButtonVisibility();
+		}
+
 		[HarmonyPostfix]
 		internal static void Postfix(LevelSelectMenuLogic __instance)
 		{
-			// Ensure our compound data component is attached.
-			__instance.tempPlaylist_.gameObject.GetOrAddComponent<LevelPlaylistCompoundData>();
-
-			if (!__instance.tempPlaylist_.Name_.IsEmptyPlaylistName())
-			{
-				__instance.quickPlaylistLabel_.text = __instance.tempPlaylist_.Name_;
-			}
+			// We need to update the Quick Playlist label because every call to this function assigns its
+			//  text value to QUICK PLAYLIST... which we don't want when we have a named playlist.
+			__instance.UpdateQuickPlaylistText();
 		}
 		
 		[HarmonyTranspiler]
@@ -34,7 +40,7 @@ namespace Distance.LevelSelectAdditions.Harmony
 		{
 			var codes = new List<CodeInstruction>(instructions);
 
-			Mod.Instance.Logger.Info("Transpiling...");
+			Mod.Instance.Logger.Info("Transpiling (1/2)...");
 			// VISUAL:
 			//if (... && this.displayType_ != LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel && ...)
 			// -to-
@@ -69,7 +75,7 @@ namespace Distance.LevelSelectAdditions.Harmony
 				}
 			}
 
-			/*Mod.Instance.Logger.Info("Transpiling (2/2)...");
+			Mod.Instance.Logger.Info("Transpiling (2/2)...");
 			// VISUAL:
 			//bool active = playlist_.Count > 0;
 			//this.startPlaylistButton_.SetActive(active);
@@ -103,7 +109,7 @@ namespace Distance.LevelSelectAdditions.Harmony
 
 					break;
 				}
-			}*/
+			}
 
 			return codes.AsEnumerable();
 		}
@@ -119,7 +125,7 @@ namespace Distance.LevelSelectAdditions.Harmony
 			return levelSelectMenu.displayType_ != LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
 		}
 
-		/*public static void SetStartPlaylistButtonActive_(LevelSelectMenuLogic levelSelectMenu, bool active)
+		public static void SetStartPlaylistButtonActive_(LevelSelectMenuLogic levelSelectMenu, bool active)
 		{
 			// Never allow starting a playlist while in ChooseMainMenuLevel display type.
 			if (levelSelectMenu.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel)
@@ -127,7 +133,7 @@ namespace Distance.LevelSelectAdditions.Harmony
 				active = false;
 			}
 			levelSelectMenu.startPlaylistButton_.SetActive(active);
-		}*/
+		}
 
 		#endregion
 	}

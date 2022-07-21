@@ -1,9 +1,4 @@
-﻿using Centrifuge.Distance.Data;
-using Centrifuge.Distance.Game;
-using Distance.LevelSelectAdditions.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Distance.LevelSelectAdditions.Extensions;
 using UnityEngine;
 
 namespace Distance.LevelSelectAdditions.Scripts
@@ -46,7 +41,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 			GameObject playlistButtonGroup2 = this.transform.Find("Panel - Level Select/Anchor - Center/Left Panel/PlaylistButtonGroup2")?.gameObject;
 			if (!playlistButtonGroup2)
 			{
-				Mod.Instance.Logger.Error("\"PlaylistButtonGroup2\" component not found");
+				Mod.Instance.Logger.Error("\"PlaylistButtonGroup2\" game object not found");
 				return;
 			}
 
@@ -133,7 +128,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 		private void OnPlaylistRenameSubmit(bool changed)
 		{
-			this.levelSelectMenu_.quickPlaylistLabel_.text = this.levelSelectMenu_.tempPlaylist_.Name_;
+			this.levelSelectMenu_.UpdateQuickPlaylistText();
 		}
 	}
 }

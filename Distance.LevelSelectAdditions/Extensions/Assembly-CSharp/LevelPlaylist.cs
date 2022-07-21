@@ -12,6 +12,12 @@ namespace Distance.LevelSelectAdditions.Extensions
 {
 	public static class LevelPlaylistExtensions
 	{
+		#region Constants
+
+		public static readonly Color BasePersonalColor = GConstants.myLevelColor_;
+
+		#endregion
+
 		#region Playlist Attributes
 
 		public static bool IsResourcesPlaylist(this LevelPlaylist playlist)
@@ -136,7 +142,7 @@ namespace Distance.LevelSelectAdditions.Extensions
 
 		#endregion
 
-		#region Display Name
+		#region Personal Display Name
 
 		public static string GetUncoloredName(this LevelPlaylist playlist)
 		{
@@ -150,7 +156,7 @@ namespace Distance.LevelSelectAdditions.Extensions
 			bool hasColor = playlist.Name_.DecodeNGUIColor(out _, out colorTag, out color);
 			if (multiplyBaseColor && hasColor && !colorTag)
 			{
-				color *= GConstants.myLevelColor_;
+				color *= BasePersonalColor;
 			}
 			return hasColor;
 		}
@@ -161,7 +167,25 @@ namespace Distance.LevelSelectAdditions.Extensions
 			bool hasColor = playlist.Name_.DecodeNGUIColor(out name, out colorTag, out color);
 			if (multiplyBaseColor && hasColor && !colorTag)
 			{
-				color *= GConstants.myLevelColor_;
+				color *= BasePersonalColor;
+			}
+			return hasColor;
+		}
+
+		// Gets the base color to use for the label (this base color is used to preserve vanilla playlist colors that don't use the `[c][/c]` tag).
+		// If alwaysUseBaseColor is true, then the base playlist color is always returned, even if the name is uncolored.
+		//  (AKA `BasePersonalColor` will always be output if the `[c][/c]` tag is not used.)
+		// Returns true if the playlist name is colored.
+		public static bool GetBaseColor(this LevelPlaylist playlist, out Color baseColor, bool alwaysUseBaseColor)
+		{
+			bool hasColor = playlist.GetColor(out bool colorTag, out _, false);
+			if ((hasColor || alwaysUseBaseColor) && !colorTag)
+			{
+				baseColor = BasePersonalColor;
+			}
+			else
+			{
+				baseColor = Color.white; // Default color with `[c][/c]` tag, or when no color is used.
 			}
 			return hasColor;
 		}
@@ -230,11 +254,11 @@ namespace Distance.LevelSelectAdditions.Extensions
 
 				if (hasColor && colorTag)
 				{
-					/*if (!hasSymbols && color.Color32Equals(GConstants.myLevelColor_))
+					/*if (!hasSymbols && color.Color32Equals(BasePersonalColor))
 					{
 						playlist.Name_ = newName;//.EncodeNGUIColorHex(Color.white); // [FFFFFF]{newName}[-]
 					}
-					else if (color.TryGetBaseColorFromMultiplier(GConstants.myLevelColor_, out Color baseColor))
+					else if (color.TryGetBaseColorFromMultiplier(BasePersonalColor, out Color baseColor))
 					{
 						// We can lose the color tag, because the current name color naturally supports the myLevelColor_ multiplier.
 						playlist.Name_ = newName.EncodeNGUIColorHex(baseColor); // [RRGGBB(AA)]{newName}[-]
@@ -295,7 +319,7 @@ namespace Distance.LevelSelectAdditions.Extensions
 
 				bool hasColor = playlist.GetNameAndColor(out string name, out bool colorTag, out Color oldColor, false);
 
-				Color newColor = (optNewColor ?? GConstants.myLevelColor_);
+				Color newColor = (optNewColor ?? BasePersonalColor);
 
 
 				// These bools state whether the new and old colors can support *not* using the [c] color tag.
@@ -303,14 +327,14 @@ namespace Distance.LevelSelectAdditions.Extensions
 				bool useOldBase = !colorTag;
 				if (colorTag) // If color tag is used, then oldColor is not the baseColor
 				{
-					useOldBase = oldColor.TryGetBaseColorFromMultiplier(GConstants.myLevelColor_, out oldBaseColor);
+					useOldBase = oldColor.TryGetBaseColorFromMultiplier(BasePersonalColor, out oldBaseColor);
 				}
 				else
 				{
-					oldColor *= GConstants.myLevelColor_;
+					oldColor *= BasePersonalColor;
 				}
-				//bool useOldBase = oldColor.TryGetBaseColorFromMultiplier(GConstants.myLevelColor_, out Color oldBaseColor);
-				bool useNewBase = newColor.TryGetBaseColorFromMultiplier(GConstants.myLevelColor_, out Color newBaseColor);
+				//bool useOldBase = oldColor.TryGetBaseColorFromMultiplier(BasePersonalColor, out Color oldBaseColor);
+				bool useNewBase = newColor.TryGetBaseColorFromMultiplier(BasePersonalColor, out Color newBaseColor);
 
 
 				// If the user has put other formatting/color symbols inside the name,
@@ -327,7 +351,7 @@ namespace Distance.LevelSelectAdditions.Extensions
 					// The above comparison needs to check `colorTag`, because the extracted color would be a base color otherwise.
 					// Normal color is the same, don't change anything.
 				}
-				else if (!optNewColor.HasValue || newColor.Color32Equals(GConstants.myLevelColor_))
+				else if (!optNewColor.HasValue || newColor.Color32Equals(BasePersonalColor))
 				{
 					if (hasSymbols && colorTag)
 					{
@@ -545,11 +569,11 @@ namespace Distance.LevelSelectAdditions.Extensions
 		{
 			if (!playlist.GetColor(out bool colorTag, out Color color, true))
 			{
-				color = GConstants.myLevelColor_;
+				color = BasePersonalColor;
 			}
 			/*else if (!colorTag) // handled by true parameter
 			{
-				color *= GConstants.myLevelColor_;
+				color *= BasePersonalColor;
 			}*/
 
 			string hex = (color.a < 1f) ? NGUIText.EncodeColor32(color) : NGUIText.EncodeColor24(color);

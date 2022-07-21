@@ -109,6 +109,7 @@ namespace Distance.LevelSelectAdditions
 
 			MenuTree settingsMenu = new MenuTree("menu.mod." + Mod.Name.ToLower(), Mod.FriendlyName);
 
+			// Page 1
 			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
 				"setting:workshop_hide_levels_in_playlists",
 				"HIDE WORKSHOP LEVELS IN PLAYLISTS",
@@ -197,6 +198,42 @@ namespace Distance.LevelSelectAdditions
 				(value) => Config.EnableTheOtherSideSprintCampaign = value,
 				description: "Shows extra sprint campaign level sets that aren't normally available (requires unlock).");
 
+
+			// Page 2
+			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
+				"setting:levelsets_enable_levelsets_options_menu",
+				"ENABLE PLAYLIST OPTIONS MENU",
+				() => Config.EnableLevelSetOptionsMenu,
+				(value) => Config.EnableLevelSetOptionsMenu = value,
+				description: "Enables the Options menu in the Level Set grid view for customizing personal playlists.");
+
+			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
+				"setting:levelsets_enable_choose_mainmenu_quick_playlist",
+				"ENABLE PLAYLIST MODE FOR MAIN MENUS",
+				() => Config.EnableChooseMainMenuQuickPlaylist,
+				(value) => Config.EnableChooseMainMenuQuickPlaylist = value,
+				description: "Allows creating playlists when choosing a Main Menu level (does not allow selecting multiple levels).");
+
+			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
+				"setting:gui_enable_choose_mainmenu_workshop_button",
+				"ENABLE WORKSHOP BUTTON FOR MAIN MENUS",
+				() => Config.EnableChooseMainMenuVisitWorkshopButton,
+				(value) => Config.EnableChooseMainMenuVisitWorkshopButton = value,
+				description: "Enables the 'Visit Workshop page' button in the Advanced level select menu when choosing a Main Menu level.");
+
+			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
+				"setting:gui_enable_rate_workshop_level_button",
+				"ENABLE RATE WORKSHOP LEVEL BUTTON",
+				() => Config.EnableRateWorkshopLevelButton,
+				(value) => Config.EnableRateWorkshopLevelButton = value,
+				description: "Re-introduces the 'Rate this level' button in the Advanced level select menu.");
+
+			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
+				"setting:gui_hide_choose_mainmenu_unused_buttons",
+				"HIDE UNUSED BUTTONS FOR MAIN MENUS",
+				() => Config.HideChooseMainMenuUnusedButtons,
+				(value) => Config.HideChooseMainMenuUnusedButtons = value,
+				description: "Hides unused buttons in the Advanced level select menu when choosing a Main Menu level.");
 
 			Menus.AddNew(MenuDisplayMode.MainMenu, settingsMenu,
 				Mod.FriendlyName.ToUpper(),
