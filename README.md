@@ -31,8 +31,3 @@ Distance mod that extends the level selection UI by adding more options.
 * Re-introduce the *Rate this level* button in the Advanced level select menu.
 * Hide unused buttons that appear in the Advanced level select menu when Choosing Main Menu levels.
 
-## Known Bugs
-
-* The Quick Playlist label can sometimes keep the last-used name.
-* The file name for the Save Quick Playlist prompt will also sometimes keep the last-used name.
-
