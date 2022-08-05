@@ -7,6 +7,8 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		Basic, // Built-in playlists
 		Special, // Workshop / Personal (generated at runtime)
 		Playlist, // User-created playlists
+
+		Count,
 	}
 
 	public static class LevelSetMenuTypeExtensions

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Distance.LevelSelectAdditions.Helpers;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -8,10 +9,25 @@ namespace Distance.LevelSelectAdditions.Harmony
 {
 	/// <summary>
 	/// Patch to enable adding a selected level in Playlist Mode while in the Choose Main Menu level display type.
+	/// <para/>
+	/// Also includes patch to handle resetting the selected main menu (to remove level set selections).
 	/// </summary>
 	[HarmonyPatch(typeof(LevelSelectMenuLogic), nameof(LevelSelectMenuLogic.OnLevelButtonClicked))]
 	internal static class LevelSelectMenuLogic__OnLevelButtonClicked
 	{
+		[HarmonyPrefix]
+		internal static void Prefix(LevelSelectMenuLogic __instance)
+		{
+			if (__instance.CurrentLevelLocked_)
+			{
+				return;
+			}
+			if (__instance.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel)
+			{
+				MainMenuLevelSetHelper.SetMainMenuLevelSet(null);
+			}
+		}
+
 		[HarmonyTranspiler]
 		internal static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
 		{

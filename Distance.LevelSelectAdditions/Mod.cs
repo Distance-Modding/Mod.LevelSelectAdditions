@@ -40,8 +40,7 @@ namespace Distance.LevelSelectAdditions
 
 		public ConfigurationLogic Config { get; private set; }
 
-
-		public LevelSetOptionsMenu LevelSetOptionsMenu { get; internal set; }
+		public Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>> LevelSetOptionsMenus { get; } = new Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>>();
 
 		public OptionsMenuLogic OptionsMenu { get; internal set; }
 
@@ -205,7 +204,7 @@ namespace Distance.LevelSelectAdditions
 				"ENABLE PLAYLIST OPTIONS MENU",
 				() => Config.EnableLevelSetOptionsMenu,
 				(value) => Config.EnableLevelSetOptionsMenu = value,
-				description: "Enables the Options menu in the Level Set grid view for customizing personal playlists.");
+				description: "Enables the Options menu in the Level Set grid view for customizing personal playlists and choosing main menu collections.");
 
 			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
 				"setting:levelsets_enable_choose_mainmenu_quick_playlist",
@@ -235,10 +234,28 @@ namespace Distance.LevelSelectAdditions
 				(value) => Config.HideChooseMainMenuUnusedButtons = value,
 				description: "Hides unused buttons in the Advanced level select menu when choosing a Main Menu level.");
 
+			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
+				"setting:random_startup_mainmenu",
+				"DECIDE MAIN MENU ON STARTUP",
+				() => Config.RandomStartupMainMenu,
+				(value) => Config.RandomStartupMainMenu = value,
+				description: "When using a playlist for the main menu, a random level will only be chosen when starting up the game. Otherwise a level will be chosen every time the main menu is loaded.");
+
 			Menus.AddNew(MenuDisplayMode.MainMenu, settingsMenu,
 				Mod.FriendlyName.ToUpper(),
 				"Settings for level selection limits, filtering, sorting, and organization.");
 		}
+
+		#region Helpers
+
+		public void ShowLevelSetOptionsMenu(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID, LevelPlaylist playlist, Action onDeletePlaylist)
+		{
+			var menuType = playlist.GetLevelSetMenuType();
+			bool isMainMenu = displayType == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
+			this.LevelSetOptionsMenus[menuType][isMainMenu].Show(displayType, modeID, playlist, onDeletePlaylist);
+		}
+
+		#endregion
 	}
 }
 

@@ -30,12 +30,12 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 			if (Mod.Instance.Config.EnableLevelSetOptionsMenu)
 			{
-				if (!this.grid_.playlist_.IsResourcesPlaylist() && G.Sys.InputManager_.GetKeyUp(InputAction.MenuStart))
+				bool isMainMenu = this.grid_.levelGridMenu_.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
+				if ((!this.grid_.playlist_.IsResourcesPlaylist() || isMainMenu) && G.Sys.InputManager_.GetKeyUp(InputAction.MenuStart))
 				{
 					//string levelSetID = this.grid_.playlist_.GetLevelSetID();
 					//LevelGridMenu.PlaylistEntry playlistEntry = this.grid_.levelGridMenu_.ScrollableEntries_.Find((entry) => entry.Playlist_.GetLevelSetID() == levelSetID);
-					//var sortMenu = Mod.Instance.GetLevelSetOptionsMenu(this.grid_.playlist_);
-					Mod.Instance.LevelSetOptionsMenu.Show(
+					Mod.Instance.ShowLevelSetOptionsMenu(
 						this.grid_.levelGridMenu_.displayType_,
 						this.grid_.levelGridMenu_.modeID_,
 						this.grid_.playlist_,

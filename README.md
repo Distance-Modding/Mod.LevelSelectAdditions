@@ -12,6 +12,7 @@ Distance mod that extends the level selection UI by adding more options.
 * Saving a playlist no longer overwrites its display name with the file name. Instead, the display name can be changed with the *Name* button when in Playlist Mode.
 * Remember the last-accessed level set/playlist, so that the game will return to your original place after playing a level appearing in multiple playlists.
 * Fix scrolling bug in Advanced level select menu where you could only scroll to the very top or bottom entry.
+* Choose level sets and playlists as the main menu, allowing to randomly see a variety of menus without manually swapping them.
 
 ## Current Options
 
@@ -30,4 +31,4 @@ Distance mod that extends the level selection UI by adding more options.
 * Make the *Visit Workshop page* button visible in the Advanced level select menu when Choosing Main Menu levels.
 * Re-introduce the *Rate this level* button in the Advanced level select menu.
 * Hide unused buttons that appear in the Advanced level select menu when Choosing Main Menu levels.
-
+* Choose whether level set/playlist main menus will change the menu every time it's loaded, or only on startup.

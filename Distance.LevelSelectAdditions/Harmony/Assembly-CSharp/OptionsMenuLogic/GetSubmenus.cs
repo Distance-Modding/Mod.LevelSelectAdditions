@@ -23,24 +23,46 @@ namespace Distance.LevelSelectAdditions.Harmony
 
 			Mod.Instance.OptionsMenu = __instance;
 
-
-			LevelSetOptionsMenu levelSetOptionsMenu = __instance.GetOrAddComponent<LevelSetOptionsMenu>();
-
-			levelSetOptionsMenu.RemoveFancyFadeIn();
-
-			Mod.Instance.LevelSetOptionsMenu = levelSetOptionsMenu;
+			// being Modular SuperMenu is suffering......
+			List<LevelSetOptionsMenu> levelSetOptionsMenus = new List<LevelSetOptionsMenu>();
+			for (LevelSetMenuType menuType = 0; menuType < LevelSetMenuType.Count; menuType++)
+			{
+				if (!Mod.Instance.LevelSetOptionsMenus.ContainsKey(menuType))
+				{
+					Mod.Instance.LevelSetOptionsMenus[menuType] = new Dictionary<bool, LevelSetOptionsMenu>();
+				}
+				for (int i = 0; i < 2; i++)
+				{
+					bool isMainMenu = i == 1;
+					if (!Mod.Instance.LevelSetOptionsMenus[menuType].TryGetValue(isMainMenu, out var levelSetOptionsMenu) || !levelSetOptionsMenu)
+					{
+						levelSetOptionsMenu = __instance.gameObject.AddComponent<LevelSetOptionsMenu>();
+						levelSetOptionsMenu.LevelSetMenuType = menuType;
+						levelSetOptionsMenu.IsMainMenu = isMainMenu;
+						levelSetOptionsMenu.RemoveFancyFadeIn();
+						levelSetOptionsMenus.Add(levelSetOptionsMenu);
+						Mod.Instance.LevelSetOptionsMenus[menuType][isMainMenu] = levelSetOptionsMenu;
+					}
+				}
+			}
 
 			List<OptionsSubmenu> menus = new List<OptionsSubmenu>(__instance.subMenus_);
 
 			foreach (var menu in __instance.subMenus_)
 			{
-				if (menu.Name_ == levelSetOptionsMenu.Name_)
+				foreach (var levelSetOptionsMenu in levelSetOptionsMenus)
 				{
-					menus.Remove(menu);
+					if (menu.Name_ == levelSetOptionsMenu.Name_)
+					{
+						menus.Remove(menu);
+					}
 				}
 			}
 
-			menus.Add(levelSetOptionsMenu);
+			foreach (var levelSetOptionsMenu in levelSetOptionsMenus)
+			{
+				menus.Add(levelSetOptionsMenu);
+			}
 
 			__instance.subMenus_ = menus.ToArray();
 		}

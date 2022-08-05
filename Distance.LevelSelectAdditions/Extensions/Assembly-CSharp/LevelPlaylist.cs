@@ -75,32 +75,76 @@ namespace Distance.LevelSelectAdditions.Extensions
 		public const string IDPrefixName      = "name" + IDPrefixSeparator;
 
 
-		public static string GetLevelSetID(this LevelPlaylist playlist)
+		public static string GetLevelSetID(this LevelPlaylist playlist, bool relativePath = false)
 		{
+			string result;
+
 			var playlistData = playlist.GetComponent<LevelPlaylistCompoundData>();
 			if (playlistData && playlistData.FilePath != null)
 			{
 				string path = new FileInfo(playlistData.FilePath).FullName.UniformPathSeparators();
 				string resourcesPath = new DirectoryInfo(Path.Combine(Application.dataPath, "Resources")).FullName.UniformPathSeparatorsTrimmed() + "/";
+				string personalPath = new DirectoryInfo(Resource.personalDistanceDirPath_).FullName.UniformPathSeparatorsTrimmed() + "/";
 
 				// Only assign if we have a FilePath to determine with,
 				//  otherwise assume its a resource playlist until a FileName may be assigned.
 				if (path.StartsWith(resourcesPath, StringComparison.InvariantCultureIgnoreCase))
 				{
-					return IDPrefixResources + path.Substring(resourcesPath.Length/* + 1*/).ToLowerInvariant();
+					result = IDPrefixResources + path.Substring(resourcesPath.Length/* + 1*/);
 				}
-
-				string personalPath = new DirectoryInfo(Resource.personalDistanceDirPath_).FullName.UniformPathSeparatorsTrimmed() + "/";
-
-				if (path.StartsWith(personalPath, StringComparison.InvariantCultureIgnoreCase))
+				else if (path.StartsWith(personalPath, StringComparison.InvariantCultureIgnoreCase))
 				{
-					return IDPrefixPersonal + path.Substring(personalPath.Length/* + 1*/).ToLowerInvariant();
+					result = IDPrefixPersonal + path.Substring(personalPath.Length/* + 1*/);
 				}
-
-				return IDPrefixPath + path.ToLowerInvariant();
+				else
+				{
+					result = IDPrefixPath + path;
+				}
+			}
+			else
+			{
+				result = IDPrefixName + playlist.Name_;
 			}
 
-			return IDPrefixName + playlist.Name_.ToLowerInvariant();
+			if (!relativePath)
+			{
+				result = result.ToLowerInvariant();
+			}
+			return result;
+		}
+
+		public static string GetRelativePathID(this LevelPlaylist playlist) => playlist.GetLevelSetID(true);
+
+		public static string RelativePathIDToAbsolutePath(this string relativePathID, out bool isName)
+		{
+			string[] parts = relativePathID.Split(new string[] { IDPrefixSeparator }, 2, StringSplitOptions.None);
+			if (parts.Length == 2)
+			{
+				string prefix = parts[0] + IDPrefixSeparator;
+				string relativePath = parts[parts.Length - 1];
+
+				switch (prefix)
+				{
+				case IDPrefixResources:
+					isName = false;
+					return Path.Combine(new DirectoryInfo(Path.Combine(Application.dataPath, "Resources")).FullName, relativePath);
+
+				case IDPrefixPersonal:
+					isName = false;
+					return Path.Combine(new DirectoryInfo(Resource.personalDistanceDirPath_).FullName, relativePath);
+
+				case IDPrefixPath:
+					isName = false;
+					return relativePath;
+
+				case IDPrefixName:
+					isName = true;
+					return relativePath;
+				}
+			}
+
+			isName = false;
+			return null;
 		}
 
 		/*public static bool IsLevelSetID(this LevelPlaylist playlist, string otherLevelSetID)

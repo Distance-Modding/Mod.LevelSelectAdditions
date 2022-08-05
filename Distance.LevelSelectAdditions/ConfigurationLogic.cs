@@ -1,4 +1,5 @@
 ﻿using Distance.LevelSelectAdditions.Events;
+using Distance.LevelSelectAdditions.Extensions;
 using Distance.LevelSelectAdditions.Sorting;
 using Reactor.API.Configuration;
 using System;
@@ -164,6 +165,28 @@ namespace Distance.LevelSelectAdditions
 			set => Set(State_LastLevelSets_ID, value);
 		}
 
+
+		private const string ProfileMainMenuLevelSets_ID = "profile.mainmenu_levelsets";
+		public Dictionary<string, string> ProfileMainMenuLevelSets
+		{
+			get => Convert(ProfileMainMenuLevelSets_ID, new Dictionary<string, string>(), overwriteNull: true);
+			set => Set(ProfileMainMenuLevelSets_ID, value);
+		}
+
+		private const string State_LastProfileMainMenuLevels_ID = "state.last_mainmenu_levels";
+		public Dictionary<string, string> State_LastProfileMainMenuLevels
+		{
+			get => Convert(State_LastProfileMainMenuLevels_ID, new Dictionary<string, string>(), overwriteNull: true);
+			set => Set(State_LastProfileMainMenuLevels_ID, value);
+		}
+
+		private const string RandomStartupMainMenu_ID = "profile.random_startup_mainmenu";
+		public bool RandomStartupMainMenu
+		{
+			get => Get<bool>(RandomStartupMainMenu_ID);
+			set => Set(RandomStartupMainMenu_ID, value);
+		}
+
 		#endregion
 
 		#region Helpers
@@ -192,15 +215,15 @@ namespace Distance.LevelSelectAdditions
 		{
 			if (State_LastLevelSetIDs.TryGetValue(displayType, out var lastPlaylists_mode))
 			{
-				if (lastPlaylists_mode.TryGetValue(modeID, out string pathName))
+				if (lastPlaylists_mode.TryGetValue(modeID, out string levelSetID))
 				{
-					return pathName;
+					return levelSetID;
 				}
 			}
 			return null;
 		}
 
-		public void SetStateLastLevelSetID(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID, string pathName)
+		public void SetStateLastLevelSetID(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID, string levelSetID)
 		{
 			var lastPlaylists_display = State_LastLevelSetIDs;
 			if (!lastPlaylists_display.TryGetValue(displayType, out Dictionary<GameModeID, string> lastPlaylists_mode))
@@ -208,7 +231,49 @@ namespace Distance.LevelSelectAdditions
 				lastPlaylists_mode = new Dictionary<GameModeID, string>();
 				lastPlaylists_display[displayType] = lastPlaylists_mode;
 			}
-			lastPlaylists_mode[modeID] = pathName;
+			lastPlaylists_mode[modeID] = levelSetID;
+			this.Save(); // auto save
+		}
+
+		public string GetProfileMainMenuRelativePathID(string profileName)
+		{
+			if (this.ProfileMainMenuLevelSets.TryGetValue(profileName, out string relativePathID))
+			{
+				return relativePathID;
+			}
+			return null;
+		}
+
+		// Returns true if the level set was changed.
+		public bool SetProfileMainMenuRelativePathID(string profileName, string relativePathID)
+		{
+			var profileMainMenuLevelSets = this.ProfileMainMenuLevelSets;
+			if (profileMainMenuLevelSets.TryGetValue(profileName, out string oldRelativePathID))
+			{
+				if (relativePathID == oldRelativePathID)
+				{
+					return false;
+				}
+			}
+			// Clear state for last level used.
+			this.SetStateLastMainMenuLevelRelativePath(profileName, null);
+			profileMainMenuLevelSets[profileName] = relativePathID;
+			this.Save(); // auto save
+			return true;
+		}
+
+		public string GetStateLastMainMenuLevelRelativePath(string profileName)
+		{
+			if (this.State_LastProfileMainMenuLevels.TryGetValue(profileName, out string relativeLevelPath))
+			{
+				return relativeLevelPath;
+			}
+			return null;
+		}
+
+		public void SetStateLastMainMenuLevelRelativePath(string profileName, string relativeLevelPath)
+		{
+			this.State_LastProfileMainMenuLevels[profileName] = relativeLevelPath;
 			this.Save(); // auto save
 		}
 
@@ -238,7 +303,19 @@ namespace Distance.LevelSelectAdditions
 				}
 			}
 
+			var profileMainMenuLevelSets = this.ProfileMainMenuLevelSets;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var profilePair in profileMainMenuLevelSets.ToArray())
+			{
+				if (string.Equals(profilePair.Value, data.oldLevelSetID, StringComparison.InvariantCultureIgnoreCase))
+				{
+					profileMainMenuLevelSets[profilePair.Key] = data.playlist.GetRelativePathID();
+				}
+			}
+
 			//TODO: When LevelSetOptions dictionary gets added, enumerate over and rename here too.
+
+			this.Save(); // auto save
 		}
 
 		private void OnPlaylistFileDeleted(PlaylistFileDeleted.Data data)
@@ -256,7 +333,19 @@ namespace Distance.LevelSelectAdditions
 				}
 			}
 
+			var profileMainMenuLevelSets = this.ProfileMainMenuLevelSets;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var profilePair in profileMainMenuLevelSets.ToArray())
+			{
+				if (string.Equals(profilePair.Value, data.levelSetID, StringComparison.InvariantCultureIgnoreCase))
+				{
+					profileMainMenuLevelSets[profilePair.Key] = null;
+				}
+			}
+
 			//TODO: When LevelSetOptions dictionary gets added, enumerate over and delete here too.
+
+			this.Save(); // auto save
 		}
 
 		public void Awake()
@@ -283,6 +372,7 @@ namespace Distance.LevelSelectAdditions
 			Get(EnableRateWorkshopLevelButton_ID, true);
 			Get(HideChooseMainMenuUnusedButtons_ID, true);
 			//Get(FixLevelSelectScrollBug_ID, true); // Always enable this fix
+			Get(RandomStartupMainMenu_ID, false);
 
 			// Save settings, and any defaults that may have been added.
 			Save();

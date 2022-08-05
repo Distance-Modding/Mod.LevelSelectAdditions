@@ -1,5 +1,6 @@
 ﻿using Centrifuge.Distance.GUI.Menu;
 using Distance.LevelSelectAdditions.Extensions;
+using Distance.LevelSelectAdditions.Helpers;
 using System;
 using UnityEngine;
 
@@ -17,7 +18,7 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		protected Action onDeletePlaylist_;
 
 
-		public override string Name_ => "custommenu.mod." + Mod.Name.ToLower() + "." + nameof(LevelSetOptionsMenu);
+		public override string Name_ => "custommenu.mod." + Mod.Name.ToLower() + "." + nameof(LevelSetOptionsMenu) + "." + this.LevelSetMenuType.ToString().ToLower() + ((this.IsMainMenu) ? "_mainmenu" : "");
 
 		public override string Title
 		{
@@ -40,8 +41,9 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 			}
 		}
 
-		// This can be called during Awake, so have a backup when playlist hasn't been assigned yet.
-		public LevelSetMenuType LevelSetMenuType => this.playlist_?.GetLevelSetMenuType() ?? LevelSetMenuType.Basic;
+		public LevelSetMenuType LevelSetMenuType { get; internal set; }
+
+		public bool IsMainMenu { get; internal set; }
 
 		public GameObject TitleLabel => this.PanelObject_.transform.Find("MenuTitleTemplate/UILabel - Title").gameObject;
 		
@@ -136,6 +138,27 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 
 		public override void InitializeVirtual()
 		{
+			// Apparently we can't just call this multiple times with different settings.
+			// Menus have been split into all possible categories to prevent issues.
+
+			if (this.IsMainMenu)
+			{
+				const string SetAsMainMenu = "SET AS MAIN MENU";
+
+				this.TweakAction(SetAsMainMenu, //"SET AS MAIN MENU" + ((isCurrent) ? " (CURRENT)" : ""),
+					this.OnSetAsMainMenuClicked,
+					"Use this playlist as the main menu. A level will be chosen from the level set based on your Main Menu playlist selection options.");
+
+				// Change the label text to show whether this is the currently selected main menu level set.
+				string relativePathID = this.playlist_.GetRelativePathID();
+				Profile profile = G.Sys.ProfileManager_.CurrentProfile_;
+				string currentRelativePathID = Mod.Instance.Config.GetProfileMainMenuRelativePathID(profile.Name_);
+				bool isCurrent = relativePathID == currentRelativePathID;
+
+				var actionLabel = this.menu_.actions_[SetAsMainMenu].gameObject.GetComponentInChildren<UILabel>();
+				actionLabel.text = SetAsMainMenu + ((isCurrent) ? " (CURRENT)" : "");
+			}
+
 			// TODO OPTIONS: Sorting
 			/*
 			var sortMethods = SortingMethods.AllSupported;
@@ -289,6 +312,14 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 				Mod.Instance.Logger.Error("Error in OnDeleteFileSubmit()");
 				Mod.Instance.Logger.Exception(ex);
 			}
+		}
+
+		private void OnSetAsMainMenuClicked()
+		{
+			MainMenuLevelSetHelper.SetMainMenuLevelSet(this.playlist_);
+			//Profile profile = G.Sys.ProfileManager_.CurrentProfile_;
+			//Mod.Instance.Config.SetProfileMainMenuRelativePathID(profile.Name_, this.playlist_.GetRelativePathID());
+			G.Sys.GameManager_.GoToMainMenu(GameManager.OpenOnMainMenuInit.Garage);
 		}
 	}
 }

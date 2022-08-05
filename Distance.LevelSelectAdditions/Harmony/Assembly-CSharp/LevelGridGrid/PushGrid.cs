@@ -45,11 +45,15 @@ namespace Distance.LevelSelectAdditions.Harmony
 					// Before:  ldloc. (menuPanel)
 					// Before:  callvirt MenuPanel.Push
 					// NOTE: (i - 3) to insert before the ldloc used to call the MenuPanel.Push instance method.
+					// MOVE LABELS FROM ldloc. TO ldarg.0
+					var labels = new List<Label>(codes[i - 3].labels);
+					codes[i - 3].labels.Clear();
 					codes.InsertRange(i - 3, new CodeInstruction[]
 					{
 						new CodeInstruction(OpCodes.Ldarg_0, null),
 						new CodeInstruction(OpCodes.Call, typeof(LevelGridGrid__PushGrid).GetMethod(nameof(AddMenuPanelButtons_))),
 					});
+					codes[i - 3].labels.AddRange(labels);
 
 					break;
 				}
@@ -66,13 +70,14 @@ namespace Distance.LevelSelectAdditions.Harmony
 			if (Mod.Instance.Config.EnableLevelSetOptionsMenu)
 			{
 				MenuPanel menuPanel = levelGridGrid.gridPanel_.GetComponent<MenuPanel>();
-				if (menuPanel && !levelGridGrid.levelGridMenu_.IsSimpleMenu_)
+				bool isMainMenu = levelGridGrid.levelGridMenu_.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
+				if (menuPanel && (!levelGridGrid.levelGridMenu_.IsSimpleMenu_ || isMainMenu))
 				{
 					if (!levelGridGrid.playlist_.IsResourcesPlaylist())
 					{
 						menuPanel.SetBottomLeftButton(InputAction.MenuStart, "PLAYLIST\nOPTIONS");
 					}
-					else if (Mod.BasicLevelSetOptionsSupported)
+					else if (Mod.BasicLevelSetOptionsSupported || isMainMenu)
 					{
 						menuPanel.SetBottomLeftButton(InputAction.MenuStart, "LEVEL SET\nOPTIONS");
 					}
