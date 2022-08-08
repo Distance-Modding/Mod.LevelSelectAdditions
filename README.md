@@ -13,6 +13,8 @@ Distance mod that extends the level selection UI by adding more options.
 * Remember the last-accessed level set/playlist, so that the game will return to your original place after playing a level appearing in multiple playlists.
 * Fix scrolling bug in Advanced level select menu where you could only scroll to the very top or bottom entry.
 * Choose level sets and playlists as the main menu, allowing to randomly see a variety of menus without manually swapping them.
+* Shows a green camera icon inside the level grid cell for the active main menu (where the medal logo would show).
+* Shows a green play arrow icon next to the active main menu level set (if there is one).
 
 ## Current Options
 

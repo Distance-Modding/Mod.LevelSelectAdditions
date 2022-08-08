@@ -95,6 +95,8 @@
     <Compile Include="Extensions\Assembly-CSharp\LevelSelectMenuLogic.cs" />
     <Compile Include="Extensions\Assembly-CSharp\NGUIExtensions.cs" />
     <Compile Include="Extensions\mscorlib\System\String.cs" />
+    <Compile Include="Harmony\Assembly-CSharp\LevelGridCell\OnDisplayedVirtual.cs" />
+    <Compile Include="Harmony\Assembly-CSharp\LevelGridCell\Update.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelGridGrid\PushGrid.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelGridMenu\CreateAndAddLevelSet.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelGridMenu\CreateEntries.cs" />
@@ -103,6 +105,7 @@
     <Compile Include="Harmony\Assembly-CSharp\LevelGridMenu\OnLevelEntrySelected.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelGridMenu\PlaylistEntry\ctor.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelGridMenu\PlaylistEntry\get_Color_.cs" />
+    <Compile Include="Harmony\Assembly-CSharp\LevelGridPlaylistButton\OnDisplayedVirtual.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelPlaylist\Create.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelPlaylist\Load.cs" />
     <Compile Include="Harmony\Assembly-CSharp\LevelPlaylist\Save.cs" />
@@ -123,6 +126,7 @@
     <Compile Include="Helpers\MainMenuLevelSetHelper.cs" />
     <Compile Include="Helpers\Sanitizer.cs" />
     <Compile Include="Mod.cs" />
+    <Compile Include="Scripts\LevelGridButtonCurrentMainMenuLogic.cs" />
     <Compile Include="Scripts\LevelPlaylistEntryUpdateLogic.cs" />
     <Compile Include="Scripts\LevelSelectWorkshopRateButtonLogic.cs" />
     <Compile Include="Scripts\Menus\LevelSetMenuType.cs" />
