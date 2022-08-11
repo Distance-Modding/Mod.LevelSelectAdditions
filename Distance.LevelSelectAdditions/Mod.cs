@@ -2,6 +2,7 @@
 using Centrifuge.Distance.GUI.Controls;
 using Centrifuge.Distance.GUI.Data;
 using Distance.LevelSelectAdditions.Extensions;
+using Distance.LevelSelectAdditions.Helpers;
 using Distance.LevelSelectAdditions.Scripts;
 using Distance.LevelSelectAdditions.Scripts.Menus;
 using Distance.LevelSelectAdditions.Sorting;
@@ -75,6 +76,17 @@ namespace Distance.LevelSelectAdditions
 			catch (Exception ex)
 			{
 				Logger.Error(Mod.Name + ": Error during Harmony.PatchAll()");
+				Logger.Exception(ex);
+				throw;
+			}
+
+			try
+			{
+				SteamworksHelper.Init(); // Handle this here for early error reporting.
+			}
+			catch (Exception ex)
+			{
+				Logger.Error(Mod.Name + ": Error during SteamworksHelper.Init()");
 				Logger.Exception(ex);
 				throw;
 			}

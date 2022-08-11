@@ -198,7 +198,7 @@ namespace Distance.LevelSelectAdditions.Sorting
 		/// </summary>
 		internal static string GetAuthorName(LevelInfo levelInfo)
 		{
-			string authorName = "Unknown";
+			string authorName = SteamworksManager.defaultUserName_;
 			if (levelInfo.levelType_ == LevelType.Official)
 			{
 				authorName = "Refract";

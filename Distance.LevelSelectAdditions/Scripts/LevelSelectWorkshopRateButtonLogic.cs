@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Distance.LevelSelectAdditions.Helpers;
+using UnityEngine;
 
 namespace Distance.LevelSelectAdditions.Scripts
 {
@@ -212,17 +213,17 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 			var entry = this.levelSelectMenu_.selectedEntry_;
 			// CHANGE: Use `[c][/c]` tags to ensure we get the exact color we want.
-			switch (entry?.myWorkshopVoteIndex_ ?? 2) // Fallback to 'No vote' if no entry is selected.
+			switch (entry?.myWorkshopVoteIndex_ ?? SteamworksHelper.VoteIndex_None) // Fallback to 'No vote' if no entry is selected.
 			{
-			case 0: // Vote for
-				this.votingLabel_.text = "My Rating:  [c][96FFB1]+[-][/c]";
+			case SteamworksHelper.VoteIndex_For: // Vote for
+				this.votingLabel_.text = "My Rating:  [c][96FFB1]" + GConstants.upVoteChar_ + "[-][/c]";
 				break;
 
-			case 1: // Vote against
-				this.votingLabel_.text = "My Rating:  [c][FF9796]-[-][/c]";
+			case SteamworksHelper.VoteIndex_Against: // Vote against
+				this.votingLabel_.text = "My Rating:  [c][FF9796]" + GConstants.downVoteChar_ + "[-][/c]";
 				break;
 
-			//case 2: // No vote
+			//case SteamworksHelper.VoteIndex_None: // No vote
 			default:
 				this.votingLabel_.text = "My Rating:  None";
 				break;
