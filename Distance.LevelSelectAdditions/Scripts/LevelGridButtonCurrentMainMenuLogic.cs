@@ -28,7 +28,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 		public bool IsCurrentMainMenu { get; internal set; }
 
-		public bool IsCoveringUnplayedCircle => this.IsCurrentMainMenu && (this.IsPlaylist || CellIconLocation == 0);
+		public bool IsCoveringUnplayedCircle => IsCurrentMainMenu && (IsPlaylist || CellIconLocation == 0);
 
 		public InterpolateUIPanelAlphaLogic panelInterp_;
 		public UISprite iconSprite_;
@@ -37,68 +37,68 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 		public void UpdateCurrentMainMenuIcon()
 		{
-			this.panelInterp_.Reset(1f);
+			panelInterp_.Reset(1f);
 
-			bool isMainMenu = this.LevelGridMenu.DisplayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
+			bool isMainMenu = LevelGridMenu.DisplayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
 			if (isMainMenu)
 			{
 				Profile profile = G.Sys.ProfileManager_.CurrentProfile_;
 				string relativePath, currentRelativePath;
 
-				if (this.IsPlaylist)
+				if (IsPlaylist)
 				{
-					LevelGridMenu.PlaylistEntry playlistEntry = this.PlaylistButton.entry_ as LevelGridMenu.PlaylistEntry;
+					LevelGridMenu.PlaylistEntry playlistEntry = PlaylistButton.entry_ as LevelGridMenu.PlaylistEntry;
 					relativePath = playlistEntry.Playlist_.GetRelativePathID();
-					currentRelativePath = Mod.Instance.Config.GetProfileMainMenuRelativePathID(profile.Name_);
+					currentRelativePath = Mod.Instance.GetProfileMainMenuRelativePathID(profile.Name_);
 				}
 				else
 				{
-					LevelGridGrid.LevelEntry levelEntry = this.GridCell.entry_ as LevelGridGrid.LevelEntry;
+					LevelGridGrid.LevelEntry levelEntry = GridCell.entry_ as LevelGridGrid.LevelEntry;
 					relativePath = levelEntry.levelInfo_.relativePath_;
 					currentRelativePath = profile.MainMenuLevelRelativePath_;
 				}
 
-				this.IsCurrentMainMenu = currentRelativePath == relativePath;
+				IsCurrentMainMenu = currentRelativePath == relativePath;
 
-				if (this.IsCurrentMainMenu)
+				if (IsCurrentMainMenu)
 				{
-					this.iconSprite_.color = IconColor;
+					iconSprite_.color = IconColor;
 				}
-				else if (ShowIconImprint && !this.IsPlaylist)
+				else if (ShowIconImprint && !IsPlaylist)
 				{
-					this.iconSprite_.color = IconImprintColor;
+					iconSprite_.color = IconImprintColor;
 				}
 
-				this.iconSpriteShadow_?.gameObject.SetActive(ShowIconShadow && !this.IsPlaylist && this.IsCurrentMainMenu);
-				this.iconSprite_.gameObject.SetActive((ShowIconImprint && !this.IsPlaylist) || this.IsCurrentMainMenu);
+				iconSpriteShadow_?.gameObject.SetActive(ShowIconShadow && !IsPlaylist && IsCurrentMainMenu);
+				iconSprite_.gameObject.SetActive((ShowIconImprint && !IsPlaylist) || IsCurrentMainMenu);
 
 				// Ensure the iconSprite ALWAYS draws above iconSpriteShadow.
-				if (this.iconSpriteShadow_)
+				if (iconSpriteShadow_)
 				{
-					this.iconSprite_.depth = 6;
-					this.iconSpriteShadow_.depth = 5;
+					iconSprite_.depth = 6;
+					iconSpriteShadow_.depth = 5;
 				}
 			}
 			else
 			{
-				this.IsCurrentMainMenu = false;
-				this.iconSpriteShadow_?.gameObject.SetActive(false);
-				this.iconSprite_.gameObject.SetActive(false);
+				IsCurrentMainMenu = false;
+				iconSpriteShadow_?.gameObject.SetActive(false);
+				iconSprite_.gameObject.SetActive(false);
 			}
 		}
 
 		private void Update()
 		{
-			if (!this.IsPlaylist && this.iconSprite_ && this.IsCurrentMainMenu)
+			if (!IsPlaylist && iconSprite_ && IsCurrentMainMenu)
 			{
 				// Don't waste your time, entry_.isSelected_ is never true.
-				if (this.GridCell.buttonList_.selectedEntry_ == this.GridCell.entry_ && ShowIconHighlight)
+				if (GridCell.buttonList_.selectedEntry_ == GridCell.entry_ && ShowIconHighlight)
 				{
-					this.iconSprite_.color = IconHighlightColor;
+					iconSprite_.color = IconHighlightColor;
 				}
 				else
 				{
-					this.iconSprite_.color = IconColor;
+					iconSprite_.color = IconColor;
 				}
 			}
 		}
@@ -108,40 +108,40 @@ namespace Distance.LevelSelectAdditions.Scripts
 			GameObject newUnplayedCircle = UnityEngine.Object.Instantiate(unplayedCircle, unplayedCircle.transform.parent);
 			newUnplayedCircle.name = "CurrentMainMenuIcon";
 
-			this.panelInterp_ = newUnplayedCircle.GetComponent<InterpolateUIPanelAlphaLogic>();
+			panelInterp_ = newUnplayedCircle.GetComponent<InterpolateUIPanelAlphaLogic>();
 			GameObject newCircle = newUnplayedCircle.transform.Find("Circle").gameObject;
 			if (!newCircle)
 			{
-				Mod.Instance.Logger.Error("\"Circle\" game object not found");
+				Mod.Log.LogError("\"Circle\" game object not found");
 				return false;
 			}
 
 			newCircle.name = "IconSprite";
 
 			// Setup our icon.
-			this.iconSprite_ = newCircle.GetComponent<UISprite>();
-			this.iconSprite_.color = IconColor;
+			iconSprite_ = newCircle.GetComponent<UISprite>();
+			iconSprite_.color = IconColor;
 
-			if (this.IsPlaylist)
+			if (IsPlaylist)
 			{
-				this.iconSprite_.spriteName = PlaylistIconSpriteName;
-				this.iconSprite_.width  = PlaylistIconSize;
-				this.iconSprite_.height = PlaylistIconSize;
+				iconSprite_.spriteName = PlaylistIconSpriteName;
+				iconSprite_.width  = PlaylistIconSize;
+				iconSprite_.height = PlaylistIconSize;
 
 				// Reposition our icon.
-				Vector3 mainMenuPos = this.panelInterp_.gameObject.transform.position;
+				Vector3 mainMenuPos = panelInterp_.gameObject.transform.position;
 				// Better alignment for camera icon at new size (we can't go too far left since it'll clip).
 				// Old (relative to Button 0003): -1.4475 0.3825 0
 				// New (relative to Button 0003): -1.445 0.385 0
 				mainMenuPos.x += 0.0025f;
 				mainMenuPos.y += 0.0025f;
-				this.panelInterp_.gameObject.transform.position = mainMenuPos;
+				panelInterp_.gameObject.transform.position = mainMenuPos;
 			}
 			else
 			{
-				this.iconSprite_.spriteName = CellIconSpriteName;
-				this.iconSprite_.width  = CellIconSize;
-				this.iconSprite_.height = CellIconSize;
+				iconSprite_.spriteName = CellIconSpriteName;
+				iconSprite_.width  = CellIconSize;
+				iconSprite_.height = CellIconSize;
 
 				// Reposition our icon.
 				// Better alignment for camera icon at new size, and move to the top-left corner (instead of top-right).
@@ -151,7 +151,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 				// Alt (relative to Button 0012): -0.0075 -0.705 0
 
 				// 0 = TopLeft (unplayed), 1 = TopRight, 2 = BottomRight (medal)
-				Vector3 mainMenuPos = this.panelInterp_.gameObject.transform.position;
+				Vector3 mainMenuPos = panelInterp_.gameObject.transform.position;
 				if (CellIconLocation == 0)
 				{
 					mainMenuPos.x += 0.0150f; // Left
@@ -168,7 +168,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 				{
 					mainMenuPos.y -= 0.2725f; // Bottom
 				}
-				this.panelInterp_.gameObject.transform.position = mainMenuPos;
+				panelInterp_.gameObject.transform.position = mainMenuPos;
 
 
 				// Create a shadow that sits behind the icon to the bottom right by 1.5 pixels.
@@ -178,17 +178,17 @@ namespace Distance.LevelSelectAdditions.Scripts
 					GameObject newCircleShadow = UnityEngine.Object.Instantiate(newCircle, newCircle.transform.parent);
 					newCircleShadow.name = "IconSpriteShadow";
 
-					this.iconSpriteShadow_ = newCircleShadow.GetComponent<UISprite>();
+					iconSpriteShadow_ = newCircleShadow.GetComponent<UISprite>();
 
-					this.iconSpriteShadow_.color = IconShadowColor;
-					this.iconSpriteShadow_.spriteName = CellIconSpriteName;
-					this.iconSpriteShadow_.width = CellIconSize;
-					this.iconSpriteShadow_.height = CellIconSize;
+					iconSpriteShadow_.color = IconShadowColor;
+					iconSpriteShadow_.spriteName = CellIconSpriteName;
+					iconSpriteShadow_.width = CellIconSize;
+					iconSpriteShadow_.height = CellIconSize;
 
-					Vector3 shadowPos = this.iconSpriteShadow_.transform.localPosition;
+					Vector3 shadowPos = iconSpriteShadow_.transform.localPosition;
 					shadowPos.x += 1.5f; // 1f;
 					shadowPos.y -= 1.5f; // 1f;
-					this.iconSpriteShadow_.transform.localPosition = shadowPos;
+					iconSpriteShadow_.transform.localPosition = shadowPos;
 				}
 			}
 
@@ -198,8 +198,8 @@ namespace Distance.LevelSelectAdditions.Scripts
 				obj.SetActive(true);
 			});
 
-			this.iconSpriteShadow_?.gameObject.SetActive(false);
-			this.iconSprite_.gameObject.SetActive(false);
+			iconSpriteShadow_?.gameObject.SetActive(false);
+			iconSprite_.gameObject.SetActive(false);
 
 			return true;
 		}

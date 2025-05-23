@@ -106,7 +106,7 @@ namespace Distance.LevelSelectAdditions.Sorting
 				}
 			}
 
-			this.comparisonMethods = comparisonList.ToArray();
+			comparisonMethods = comparisonList.ToArray();
 			this.reverseMethods = reverseList.ToArray();
 		}
 
@@ -127,16 +127,16 @@ namespace Distance.LevelSelectAdditions.Sorting
 			/// </summary>
 			public LevelSortEntry(LevelSelectMenuLogic levelSelectMenu, LevelNameAndPathPair levelNameAndPath)
 			{
-				this.LevelNameAndPath = levelNameAndPath;
-				this.ModeID = levelSelectMenu.modeID_;
-				this.LevelInfo = levelSelectMenu.levelSets_.GetLevelInfo(this.LevelNameAndPath.levelPath_);
-				this.AuthorName = GetAuthorName(this.LevelInfo);
+				LevelNameAndPath = levelNameAndPath;
+				ModeID = levelSelectMenu.modeID_;
+				LevelInfo = levelSelectMenu.levelSets_.GetLevelInfo(LevelNameAndPath.levelPath_);
+				AuthorName = GetAuthorName(LevelInfo);
 
-				this.LevelProgress = levelSelectMenu.currentProfile_?.progress_?.GetLevelProgress(this.LevelNameAndPath.levelPath_);
-				this.MedalStatus = MedalStatus.None;
-				if (this.LevelProgress != null)
+				LevelProgress = levelSelectMenu.currentProfile_?.progress_?.GetLevelProgress(LevelNameAndPath.levelPath_);
+				MedalStatus = MedalStatus.None;
+				if (LevelProgress != null)
 				{
-					this.MedalStatus = this.LevelProgress.GetMedal(this.ModeID);
+					MedalStatus = LevelProgress.GetMedal(ModeID);
 				}
 			}
 
@@ -145,16 +145,16 @@ namespace Distance.LevelSelectAdditions.Sorting
 			/// </summary>
 			public LevelSortEntry(LevelGridMenu levelGridMenu, LevelPlaylist.ModeAndLevelInfo modeAndLevelInfo)
 			{
-				this.LevelNameAndPath = modeAndLevelInfo.levelNameAndPath_;
-				this.ModeID = levelGridMenu.modeID_; // modeAndLevelInfo.mode_;
-				this.LevelInfo = levelGridMenu.levelSets_.GetLevelInfo(this.LevelNameAndPath.levelPath_);
-				this.AuthorName = GetAuthorName(this.LevelInfo);
+				LevelNameAndPath = modeAndLevelInfo.levelNameAndPath_;
+				ModeID = levelGridMenu.modeID_; // modeAndLevelInfo.mode_;
+				LevelInfo = levelGridMenu.levelSets_.GetLevelInfo(LevelNameAndPath.levelPath_);
+				AuthorName = GetAuthorName(LevelInfo);
 
-				this.LevelProgress = levelGridMenu.profileProgress_?.GetLevelProgress(this.LevelNameAndPath.levelPath_);
-				this.MedalStatus = MedalStatus.None;
-				if (this.LevelProgress != null)
+				LevelProgress = levelGridMenu.profileProgress_?.GetLevelProgress(LevelNameAndPath.levelPath_);
+				MedalStatus = MedalStatus.None;
+				if (LevelProgress != null)
 				{
-					this.MedalStatus = this.LevelProgress.GetMedal(this.ModeID);
+					MedalStatus = LevelProgress.GetMedal(ModeID);
 				}
 			}
 		}
@@ -224,10 +224,10 @@ namespace Distance.LevelSelectAdditions.Sorting
 			// Map levels to entries with extra information needed for most sorting methods.
 			// This info could also be grabbed on the fly, but it would be slower if you have
 			//  thousands of workshop levels or something.
-			this.playlistEntries = new Dictionary<LevelPlaylist.ModeAndLevelInfo, LevelSortEntry>();
+			playlistEntries = new Dictionary<LevelPlaylist.ModeAndLevelInfo, LevelSortEntry>();
 			foreach (LevelPlaylist.ModeAndLevelInfo modeAndLevelInfo in playlist.playlist_)
 			{
-				this.playlistEntries.Add(modeAndLevelInfo, new LevelSortEntry(levelGridMenu, modeAndLevelInfo));
+				playlistEntries.Add(modeAndLevelInfo, new LevelSortEntry(levelGridMenu, modeAndLevelInfo));
 			}
 			/*this.entries = new Dictionary<string, LevelSortEntry>();
 			foreach (LevelPlaylist.ModeAndLevelInfo modeAndLevelInfo in playlist.playlist_)
@@ -236,7 +236,7 @@ namespace Distance.LevelSelectAdditions.Sorting
 				//this.entries.Add(modeAndLevelInfo, new LevelSortEntry(levelGridMenu, modeAndLevelInfo));
 			}*/
 
-			playlist.Sort(this.ComparePlaylist);
+			playlist.Sort(ComparePlaylist);
 		}
 
 		/// <summary>
@@ -245,17 +245,17 @@ namespace Distance.LevelSelectAdditions.Sorting
 		private int ComparePlaylist(LevelPlaylist.ModeAndLevelInfo x, LevelPlaylist.ModeAndLevelInfo y)
 		{
 			// Get our entries containing needed additional information.
-			LevelSortEntry x_entry = this.playlistEntries[x];
-			LevelSortEntry y_entry = this.playlistEntries[y];
+			LevelSortEntry x_entry = playlistEntries[x];
+			LevelSortEntry y_entry = playlistEntries[y];
 			//LevelSortEntry x_entry = this.entries[x.levelNameAndPath_.levelPath_];
 			//LevelSortEntry y_entry = this.entries[y.levelNameAndPath_.levelPath_];
 
 			// Keep applying comparisons down the list, until one returns a difference.
 			int result = 0;
-			for (int i = 0; result == 0 && i < this.comparisonMethods.Length; i++)
+			for (int i = 0; result == 0 && i < comparisonMethods.Length; i++)
 			{
-				result = this.comparisonMethods[i](x_entry, y_entry);
-				if (this.reverseMethods[i])
+				result = comparisonMethods[i](x_entry, y_entry);
+				if (reverseMethods[i])
 				{
 					result = -result;
 				}

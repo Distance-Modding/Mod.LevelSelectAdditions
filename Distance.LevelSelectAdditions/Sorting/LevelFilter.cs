@@ -65,7 +65,7 @@ namespace Distance.LevelSelectAdditions.Sorting
 					LevelPlaylist personalPlaylist = LevelGridMenu.LoadPlaylist(absolutePath);
 					if (!levelPlaylist)
 					{
-						Mod.Instance.Logger.Warning("Failed to load: " + absolutePath);
+						Mod.Log.LogWarning("Failed to load: " + absolutePath);
 						continue;
 					}
 					if (personalPlaylist.Count_ == 0)

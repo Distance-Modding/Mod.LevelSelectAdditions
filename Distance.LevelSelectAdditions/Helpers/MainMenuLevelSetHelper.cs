@@ -41,9 +41,9 @@ namespace Distance.LevelSelectAdditions.Helpers
 				relativePathID = playlist.GetRelativePathID();
 			}
 			Profile profile = G.Sys.ProfileManager_.CurrentProfile_;
-			if (Mod.Instance.Config.SetProfileMainMenuRelativePathID(profile.Name_, relativePathID))
+			if (Mod.Instance.SetProfileMainMenuRelativePathID(profile.Name_, relativePathID))
 			{
-				Mod.Instance.Config.SetStateLastMainMenuLevelRelativePath(profile.Name_, null);
+				Mod.Instance.SetStateLastMainMenuLevelRelativePath(profile.Name_, null);
 				profile.MainMenuLevelRelativePath_ = null; // Force main menu to reload by claiming it was changed.
 				if (playlist != null)
 				{
@@ -62,29 +62,28 @@ namespace Distance.LevelSelectAdditions.Helpers
 				return;
 			}
 
-			string lastLevel = Mod.Instance.Config.GetStateLastMainMenuLevelRelativePath(profile.Name_);
-			if (force || lastLevel == null || (!StartupLevelChosen || !Mod.Instance.Config.RandomStartupMainMenu))
+			string lastLevel = Mod.Instance.GetStateLastMainMenuLevelRelativePath(profile.Name_);
+			if (force || lastLevel == null || (!StartupLevelChosen || !Mod.RandomStartupMainMenu.Value))
 			{
-				string relativePathID = Mod.Instance.Config.GetProfileMainMenuRelativePathID(profile.Name_);
+				string relativePathID = Mod.Instance.GetProfileMainMenuRelativePathID(profile.Name_);
 				if (relativePathID != null)
 				{
 					LevelPlaylist levelPlaylist = LoadFromRelativePathID(relativePathID);
 					if (levelPlaylist != null)
 					{
-
 						List<LevelInfo> levels = levelPlaylist.Playlist_.Select((x) => G.Sys.LevelSets_.GetLevelInfo(x.levelNameAndPath_.levelPath_))
 																		.Where((x) => x.modes_.ContainsKey((int)GameModeID.MainMenu))
 																		.ToList();
 						if (levels.Count > 0)
 						{
 							StartupLevelChosen = true;
-
 							// TODO: Avoid duplicate of last chosen main menu level?
+
 							var rng = new System.Random();
 							var level = levels[rng.Next(0, levels.Count)];
 
 							profile.MainMenuLevelRelativePath_ = level.relativePath_;
-							Mod.Instance.Config.SetStateLastMainMenuLevelRelativePath(profile.Name_, level.relativePath_);
+							Mod.Instance.SetStateLastMainMenuLevelRelativePath(profile.Name_, level.relativePath_);
 						}
 					}
 				}

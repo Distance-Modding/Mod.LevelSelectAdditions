@@ -23,11 +23,11 @@ namespace Distance.LevelSelectAdditions.Events
 			public Data(LevelPlaylist playlist, Color? oldColor, string oldNameColored, Color? newColor)
 			{
 				this.playlist = playlist;
-				this.levelSetID = playlist.GetLevelSetID();
+				levelSetID = playlist.GetLevelSetID();
 				this.oldColor = oldColor;
 				this.oldNameColored = oldNameColored;
 				this.newColor = newColor;
-				this.newNameColored = playlist.Name_;
+				newNameColored = playlist.Name_;
 			}
 		}
 	}

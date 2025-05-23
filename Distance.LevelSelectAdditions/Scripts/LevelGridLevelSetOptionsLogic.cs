@@ -17,28 +17,28 @@ namespace Distance.LevelSelectAdditions.Scripts
 			this.grid_ = this.GetComponentInParent<LevelGridGrid>();
 			if (!this.grid_)
 			{
-				Mod.Instance.Logger.Error(nameof(LevelGridGrid) + " component not found");
+				Mod.Log.LogError(nameof(LevelGridGrid) + " component not found");
 			}
 		}
 
 		private void Update()
 		{
-			if (/*this.entries_ == null || this.entries_.Count == 0 ||*/ !this.grid_.isGridPushed_)
+			if (/*this.entries_ == null || this.entries_.Count == 0 ||*/ !grid_.isGridPushed_)
 			{
 				return;
 			}
 
-			if (Mod.Instance.Config.EnableLevelSetOptionsMenu)
+			if (Mod.EnableLevelSetOptionsMenu.Value)
 			{
-				bool isMainMenu = this.grid_.levelGridMenu_.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
-				if ((!this.grid_.playlist_.IsResourcesPlaylist() || isMainMenu) && G.Sys.InputManager_.GetKeyUp(InputAction.MenuStart))
+				bool isMainMenu = grid_.levelGridMenu_.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
+				if ((!grid_.playlist_.IsResourcesPlaylist() || isMainMenu) && G.Sys.InputManager_.GetKeyUp(InputAction.MenuStart))
 				{
 					//string levelSetID = this.grid_.playlist_.GetLevelSetID();
 					//LevelGridMenu.PlaylistEntry playlistEntry = this.grid_.levelGridMenu_.ScrollableEntries_.Find((entry) => entry.Playlist_.GetLevelSetID() == levelSetID);
 					Mod.Instance.ShowLevelSetOptionsMenu(
-						this.grid_.levelGridMenu_.displayType_,
-						this.grid_.levelGridMenu_.modeID_,
-						this.grid_.playlist_,
+						grid_.levelGridMenu_.displayType_,
+						grid_.levelGridMenu_.modeID_,
+						grid_.playlist_,
 						//playlistEntry,
 						OnDeletePlaylist);
 				}
@@ -48,7 +48,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 		private void OnDeletePlaylist()
 		{
 			G.Sys.MenuPanelManager_.Pop(false);
-			this.grid_.levelGridMenu_.CreateEntries();
+			grid_.levelGridMenu_.CreateEntries();
 		}
 	}
 }

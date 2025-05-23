@@ -20,26 +20,26 @@ namespace Distance.LevelSelectAdditions.Scripts
 		// Call during LevelSelectMenuLogic.Initialize to match the current `EnableRateWorkshopLevelButton` setting.
 		public void Initialize()
 		{
-			if (!this.levelSelectMenu_)
+			if (!levelSelectMenu_)
 			{
 				return; // Failed initialization, don't do anything.
 			}
 
-			if (this.visitButton_ != null && this.rateButton_ != null)
+			if (visitButton_ != null && rateButton_ != null)
 			{
-				UIWidget visitWidget = this.visitButton_.GetComponent<UIWidget>();
+				UIWidget visitWidget = visitButton_.GetComponent<UIWidget>();
 
-				if (Mod.Instance.Config.EnableRateWorkshopLevelButton)
+				if (Mod.EnableRateWorkshopLevelButton.Value)
 				{
-					this.visitButton_.transform.SetGlobalPosX(this.visitButtonNewPositionX_);
-					visitWidget.width = this.visitButtonNewWidth_;
-					this.rateButton_.SetActive(true);
+					visitButton_.transform.SetGlobalPosX(visitButtonNewPositionX_);
+					visitWidget.width = visitButtonNewWidth_;
+					rateButton_.SetActive(true);
 				}
 				else
 				{
-					this.visitButton_.transform.SetGlobalPosX(this.visitButtonOldPositionX_);
-					visitWidget.width = this.visitButtonOldWidth_;
-					this.rateButton_.SetActive(false);
+					visitButton_.transform.SetGlobalPosX(visitButtonOldPositionX_);
+					visitWidget.width = visitButtonOldWidth_;
+					rateButton_.SetActive(false);
 				}
 			}
 		}
@@ -47,10 +47,10 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 		private void Awake()
 		{
-			this.levelSelectMenu_ = this.GetComponentInParent<LevelSelectMenuLogic>();
-			if (!this.levelSelectMenu_)
+			levelSelectMenu_ = GetComponentInParent<LevelSelectMenuLogic>();
+			if (!levelSelectMenu_)
 			{
-				Mod.Instance.Logger.Error(nameof(LevelSelectMenuLogic) + " component not found");
+				Mod.Log.LogError(nameof(LevelSelectMenuLogic) + " component not found");
 				return;
 			}
 
@@ -60,7 +60,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 		private void Update()
 		{
-			if (this.levelSelectMenu_ == null)
+			if (levelSelectMenu_ == null)
 			{
 				return; // Failed initialization, don't do anything.
 			}
@@ -69,19 +69,19 @@ namespace Distance.LevelSelectAdditions.Scripts
 			// We *could* choose to only update the label when the rating is changed by handling OnRateLevelPanelPop,
 			//  (and when choosing a new entry with SelectEntry)... But that's extra hooking that isn't necessary,
 			//  so just update the label every cycle.
-			this.SetRatingText();
+			SetRatingText();
 
 
-			if (this.levelSelectMenu_.IsMenuActiveAndTop_)
+			if (levelSelectMenu_.IsMenuActiveAndTop_)
 			{
-				this.UpdateInput();
+				UpdateInput();
 			}
 		}
 
 		private void UpdateInput()
 		{
-			if (this.levelSelectMenu_.ignoreMenuInputForOneFrame_ || !G.Sys.MenuPanelManager_.MenuInputEnabled_ ||
-				this.levelSelectMenu_.SearchButtonSelected_)
+			if (levelSelectMenu_.ignoreMenuInputForOneFrame_ || !G.Sys.MenuPanelManager_.MenuInputEnabled_ ||
+				levelSelectMenu_.SearchButtonSelected_)
 			{
 				return;
 			}
@@ -106,18 +106,18 @@ namespace Distance.LevelSelectAdditions.Scripts
 		private void SetupWorkshopRateButton()
 		{
 			// Full path: "LevelSelectRoot/Panel - Level Select/Anchor - Center/Left Panel/WorkshopItemControlsPanel/VisitWorkshopButton"
-			GameObject visitButton = this.transform.Find("Panel - Level Select/Anchor - Center/Left Panel/WorkshopItemControlsPanel/VisitWorkshopButton")?.gameObject;
+			GameObject visitButton = transform.Find("Panel - Level Select/Anchor - Center/Left Panel/WorkshopItemControlsPanel/VisitWorkshopButton")?.gameObject;
 			if (!visitButton)
 			{
-				Mod.Instance.Logger.Error("\"VisitWorkshopButton\" game object not found");
+				Mod.Log.LogError("\"VisitWorkshopButton\" game object not found");
 				return;
 			}
-			this.visitButton_ = visitButton;
+			visitButton_ = visitButton;
 
 			// Create a copy of VisitWorkshopButton to be our new rate button.
-			GameObject rateButton = UnityEngine.Object.Instantiate(visitButton, visitButton.transform.parent);
+			GameObject rateButton = Instantiate(visitButton, visitButton.transform.parent);
 			rateButton.name = "RateWorkshopLevelButton";
-			this.rateButton_ = rateButton;
+			rateButton_ = rateButton;
 
 			// Reposition the button (to the right) to make room for our new button.
 			// NOTE: Unlike with the Quick Playlist Rename Button, the positions used here are global, and not tied to the parent panel shape.
@@ -133,12 +133,12 @@ namespace Distance.LevelSelectAdditions.Scripts
 			Vector3 ratePos = visitPos;// rateButton.transform.position;
 			// initial x pos: -0.56f
 
-			this.visitButtonOldPositionX_ = visitPos.x;
+			visitButtonOldPositionX_ = visitPos.x;
 
 			visitPos.x -= (-0.56f - -0.365f); // (+= 0.195f) panel center => far right
 			ratePos.x  -= (-0.56f - -0.795f); // (-= 0.235f) panel center => far left
 
-			this.visitButtonNewPositionX_ = visitPos.x;
+			visitButtonNewPositionX_ = visitPos.x;
 
 			visitButton.transform.position = visitPos;
 			rateButton.transform.position = ratePos;
@@ -151,11 +151,11 @@ namespace Distance.LevelSelectAdditions.Scripts
 			// initial width:  184 (~247px)
 			// initial height:  24 ( ~28px)
 
-			this.visitButtonOldWidth_ = visitWidget.width;
+			visitButtonOldWidth_ = visitWidget.width;
 
 			rateWidget.width = 157; // (~209px)
 
-			this.visitButtonNewWidth_ = visitWidget.width; // Unchanged at the moment
+			visitButtonNewWidth_ = visitWidget.width; // Unchanged at the moment
 
 
 			// What does this actually do? Is it necessary?
@@ -170,8 +170,8 @@ namespace Distance.LevelSelectAdditions.Scripts
 			UILabel rateLabel = rateButton.GetComponentInChildren<UILabel>();
 			// Use this as dummy text, so that SetRatingText can choose to only function while the rate button setting is enabled.
 			rateLabel.text = "Rate this level"; // OLD BUTTON TEXT that was used before this feature was removed.
-			this.votingLabel_ = rateLabel; // Store the label so that we can update its text at any time.
-			this.SetRatingText(); // Set the initial text for the rate button label.
+			votingLabel_ = rateLabel; // Store the label so that we can update its text at any time.
+			SetRatingText(); // Set the initial text for the rate button label.
 
 
 			// Change the `onClick` event for our button.
@@ -194,7 +194,7 @@ namespace Distance.LevelSelectAdditions.Scripts
 			// Rating is already handled by this *previously-unused* level select function.
 			// The `RateLevel` function handles all safety checks like whether this is really
 			//  a workshop level or not. So we don't have to do anything extra.
-			this.levelSelectMenu_.RateLevel();
+			levelSelectMenu_.RateLevel();
 		}
 
 		/// <summary>
@@ -207,25 +207,25 @@ namespace Distance.LevelSelectAdditions.Scripts
 			//  which returns 'No vote' when in privacy mode, but we want to follow convention with `FinishMenuLogic`.
 			if (G.Sys.OptionsManager_.General_.WorkshopRatingPrivacyMode_)
 			{
-				this.votingLabel_.text = "Rating: Hidden"; // Interestingly, the "My" is excluded only for this.
+				votingLabel_.text = "Rating: Hidden"; // Interestingly, the "My" is excluded only for this.
 				return;
 			}
 
-			var entry = this.levelSelectMenu_.selectedEntry_;
+			var entry = levelSelectMenu_.selectedEntry_;
 			// CHANGE: Use `[c][/c]` tags to ensure we get the exact color we want.
 			switch (entry?.myWorkshopVoteIndex_ ?? SteamworksHelper.VoteIndex_None) // Fallback to 'No vote' if no entry is selected.
 			{
 			case SteamworksHelper.VoteIndex_For: // Vote for
-				this.votingLabel_.text = "My Rating:  [c][96FFB1]" + GConstants.upVoteChar_ + "[-][/c]";
+				votingLabel_.text = "My Rating:  [c][96FFB1]" + GConstants.upVoteChar_ + "[-][/c]";
 				break;
 
 			case SteamworksHelper.VoteIndex_Against: // Vote against
-				this.votingLabel_.text = "My Rating:  [c][FF9796]" + GConstants.downVoteChar_ + "[-][/c]";
+				votingLabel_.text = "My Rating:  [c][FF9796]" + GConstants.downVoteChar_ + "[-][/c]";
 				break;
 
 			//case SteamworksHelper.VoteIndex_None: // No vote
 			default:
-				this.votingLabel_.text = "My Rating:  None";
+				votingLabel_.text = "My Rating:  None";
 				break;
 			}
 		}

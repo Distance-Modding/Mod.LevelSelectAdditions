@@ -21,11 +21,11 @@ namespace Distance.LevelSelectAdditions.Extensions
 		public static void UpdateBottomLeftButtonVisibility(this LevelSelectMenuLogic levelSelectMenu)
 		{
 			// Make sure to always display these buttons when in Playlist Mode.
-			if (Mod.Instance.Config.HideChooseMainMenuUnusedButtons && !levelSelectMenu.showingLevelPlaylist_)
+			if (Mod.HideChooseMainMenuUnusedButtons.Value && !levelSelectMenu.showingLevelPlaylist_)
 			{
 				// Hide unused buttons when in the Choose Main Menu display type.
 				bool isMainMenu = levelSelectMenu.displayType_ == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
-				levelSelectMenu.createPlaylistButton_.SetActive(!isMainMenu || Mod.Instance.Config.EnableChooseMainMenuQuickPlaylist);
+				levelSelectMenu.createPlaylistButton_.SetActive(!isMainMenu || Mod.EnableChooseMainMenuQuickPlaylist.Value);
 				levelSelectMenu.showLeaderboardsButton_.SetActive(!isMainMenu);
 			}
 			else

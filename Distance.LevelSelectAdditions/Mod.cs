@@ -1,20 +1,21 @@
-﻿using Centrifuge.Distance.Game;
-using Centrifuge.Distance.GUI.Controls;
-using Centrifuge.Distance.GUI.Data;
+﻿using BepInEx;
+using BepInEx.Configuration;
+using BepInEx.Logging;
+using Distance.LevelSelectAdditions.Events;
 using Distance.LevelSelectAdditions.Extensions;
 using Distance.LevelSelectAdditions.Helpers;
 using Distance.LevelSelectAdditions.Scripts;
 using Distance.LevelSelectAdditions.Scripts.Menus;
 using Distance.LevelSelectAdditions.Sorting;
+using JsonFx.Json;
+using JsonFx.Serialization;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Reactor.API.Attributes;
-using Reactor.API.Interfaces.Systems;
-using Reactor.API.Logging;
-using Reactor.API.Runtime.Patching;
-using UnityEngine;
 using System.Reflection;
+using UnityEngine;
 
 using SortingMethod = LevelSelectMenuLogic.SortingMethod;
 
@@ -23,90 +24,78 @@ namespace Distance.LevelSelectAdditions
 	/// <summary>
 	/// The mod's main class containing its entry point
 	/// </summary>
-	[ModEntryPoint("com.github.trigger-segfault/Distance.LevelSelectAdditions")]
-	public sealed class Mod : MonoBehaviour
+	[BepInPlugin(modGUID, modName, modVersion)]
+	public sealed class Mod : BaseUnityPlugin
 	{
-		public const string Name = "LevelSelectAdditions";
-		public const string FullName = "Distance." + Name;
-		public const string FriendlyName = "Level Select Additions";
+		//Mod Details
+		private const string modGUID = "Distance.LevelSelectAdditions";
+		public const string modName = "Level Select Additions";
+		private const string modVersion = "1.1.5";
 
+		//Config Entry Strings
+		public static string HideWorkshopPlaylistsKey = "Hide Workshop Levels in Playlist";
+		public static string WorkshopLimitKey = "Workshop Level Limit";
+		public static string WorkshopSortingKey = "Workshop Sorting (1st)";
+		public static string WorkshopSortingKey2 = "Workshop Sorting (2nd)";
+		public static string WorkshopSortingKey3 = "Workshop Sorting (3rd)";
+		public static string WorkshopReverseSortingKey = "Reverse Workshop Sorting (1st)";
+		public static string WorkshopReverseSortingKey2 = "Reverse Workshop Sorting (2nd)";
+		public static string WorkshopReverseSortingKey3 = "Reverse Workshop Sorting (3rd)";
+		public static string EnableOtherCampaignKey = "Enable Extra Sprint Campaigns";
+		public static string EnableLevelSetOptionsKey = "Enable Playlist Options Menu";
+		public static string EnableQuickPlaylistKey = "Enable Playlist Mode for Main Menus";
+		public static string EnableVisitWorkshopKey = "Enable Workshop Button for Main Menus";
+		public static string EnableRateWorkshopKey = "Enable Rate Workshop Level Button";
+		public static string HideUnusedButtonsKey = "Hide Unused Buttons for Main Menus";
+		public static string RandomStartupKey = "Decide Menu on Startup";
+
+		//Config Entries
+		public static ConfigEntry<bool> HideWorkshopLevelsInPlaylists { get; set; }
+		public static ConfigEntry<int> WorkshopLevelLimit { get; set; }
+		public static ConfigEntry<SortingMethod> WorkshopSortingMethod { get; set; }
+		public static ConfigEntry<SortingMethod> WorkshopSortingMethod2 { get; set; }
+		public static ConfigEntry<SortingMethod> WorkshopSortingMethod3 { get; set; }
+		public static ConfigEntry<bool> WorkshopReverseSortingMethod { get; set; }
+		public static ConfigEntry<bool> WorkshopReverseSortingMethod2 { get; set; }
+		public static ConfigEntry<bool> WorkshopReverseSortingMethod3 { get; set; }
+		public static ConfigEntry<bool> EnableTheOtherSideSprintCampaign { get; set; }
+		public static ConfigEntry<bool> EnableLevelSetOptionsMenu { get; set; }
+		public static ConfigEntry<bool> EnableChooseMainMenuQuickPlaylist { get; set; }
+		public static ConfigEntry<bool> EnableChooseMainMenuVisitWorkshopButton { get; set; }
+		public static ConfigEntry<bool> EnableRateWorkshopLevelButton { get; set; }
+		public static ConfigEntry<bool> HideChooseMainMenuUnusedButtons { get; set; }
+		public static ConfigEntry<bool> RandomStartupMainMenu { get; set; }
+
+		//Public Variables
 		public const bool BasicLevelSetOptionsSupported = false;
 
-
-		public static Mod Instance { get; private set; }
-
-		public IManager Manager { get; private set; }
-
-		public Log Logger { get; private set; }
-
-		public ConfigurationLogic Config { get; private set; }
-
 		public Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>> LevelSetOptionsMenus { get; } = new Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>>();
+		public Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>> State_LastLevelSetIDs { get; set; } = new Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>>();
+		public Dictionary<string, string> ProfileMainMenuLevelSets { get; set; } = new Dictionary<string, string>();
+		public Dictionary<string, string> State_LastProfileMainMenuLevels { get; set; } = new Dictionary<string, string>();
 
 		public OptionsMenuLogic OptionsMenu { get; internal set; }
 
+		//Other
+		private static readonly Harmony harmony = new Harmony(modGUID);
+		public static ManualLogSource Log = new ManualLogSource(modName);
+		public static Mod Instance;
+
 		/// <summary>
 		/// Method called as soon as the mod is loaded.
-		/// WARNING:	Do not load asset bundles/textures in this function
-		///				The unity assets systems are not yet loaded when this
-		///				function is called. Loading assets here can lead to
-		///				unpredictable behaviour and crashes!
 		/// </summary>
-		public void Initialize(IManager manager)
+		public void Awake()
 		{
 			// Do not destroy the current game object when loading a new scene
 			DontDestroyOnLoad(this);
 
-			Instance = this;
-			Manager = manager;
-
-			Logger = LogManager.GetForCurrentAssembly();
-			Logger.Info(Mod.Name + ": Initializing...");
-
-			Config = gameObject.AddComponent<ConfigurationLogic>();
-
-			try
+			if (Instance == null)
 			{
-				// Never ever EVER use this!!!
-				// It's the same as below (with `GetCallingAssembly`) wrapped around a silent catch-all.
-				//RuntimePatcher.AutoPatch();
-
-				RuntimePatcher.HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(Mod.Name + ": Error during Harmony.PatchAll()");
-				Logger.Exception(ex);
-				throw;
+				Instance = this;
 			}
 
-			try
-			{
-				SteamworksHelper.Init(); // Handle this here for early error reporting.
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(Mod.Name + ": Error during SteamworksHelper.Init()");
-				Logger.Exception(ex);
-				throw;
-			}
+			Log = BepInEx.Logging.Logger.CreateLogSource(modGUID);
 
-			try
-			{
-				CreateSettingsMenu();
-			}
-			catch (Exception ex)
-			{
-				Logger.Error(Mod.Name + ": Error during CreateSettingsMenu()");
-				Logger.Exception(ex);
-				throw;
-			}
-
-			Logger.Info(Mod.Name + ": Initialized!");
-		}
-
-		private void CreateSettingsMenu()
-		{
 			// Arbitrary values for limits, since the Input Prompt is kind of a pain.
 			// You can always change them for more precise values in the config file anyways.
 			// Maybe the Input Prompt can *also* be added, for more precise changes...
@@ -117,154 +106,411 @@ namespace Distance.LevelSelectAdditions
 			Dictionary<string, SortingMethod> sortDictionary = LevelSort.GetSupportedMethodsList()
 																		.ToDictionary(s => LevelSort.GetMethodName(s));
 
+			//Config Setup
+			HideWorkshopLevelsInPlaylists = Config.Bind("General",
+				HideWorkshopPlaylistsKey,
+				false,
+				new ConfigDescription("Exclude levels from the Workshop Level Set that appear in personal playlists."));
 
-			MenuTree settingsMenu = new MenuTree("menu.mod." + Mod.Name.ToLower(), Mod.FriendlyName);
+			WorkshopLevelLimit = Config.Bind("General",
+				WorkshopLimitKey,
+				1000,
+				new ConfigDescription("Set maximum number of levels shown in Workshop Level Set.",
+					new AcceptableValueRange<int>(-1, 2000)));
 
-			// Page 1
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:workshop_hide_levels_in_playlists",
-				"HIDE WORKSHOP LEVELS IN PLAYLISTS",
-				() => Config.HideWorkshopLevelsInPlaylists,
-				(value) => Config.HideWorkshopLevelsInPlaylists = value,
-				description: "Exclude levels from the Workshop Level Set that appear in personal playlists.");
+			WorkshopSortingMethod = Config.Bind("General",
+				WorkshopSortingKey,
+				SortingMethod.Recently_Downloaded,
+				new ConfigDescription("Choose how Workshop Level Set levels are sorted."));
 
-			settingsMenu.ListBox<int>(MenuDisplayMode.MainMenu,
-				"setting:workshop_level_limit",
-				"WORKSHOP LEVEL LIMIT",
-				() => Config.WorkshopLevelLimit,
-				(value) => Config.WorkshopLevelLimit = value,
-				limitDictionary,
-				description: "Set maximum number of levels shown in Workshop Level Set.");
+			WorkshopReverseSortingMethod = Config.Bind("General",
+				WorkshopReverseSortingKey,
+				false,
+				new ConfigDescription("Reverse the order of the first Workshop sorting method."));
 
-			// Unfortunately, ListBoxes don't support displaying unknown entries, so using this would be ugly :(
-			/*settingsMenu.InputPrompt(MenuDisplayMode.MainMenu,
-				"setting:workshop_level_limit",
-				"CHANGE WORKSHOP LEVEL LIMIT...",
-				(string x) => {
-					if (int.TryParse(x, out int result))
-					{
-						Config.WorkshopLevelLimit = Math.Max(//-1
-															 0,
-															 result);
-					}
-					else
-					{
-						Logger.Warning("Failed to parse user input.");
-					}
-				},
-				title: "NEW LEVEL LIMIT",
-				defaultValue: null, //"1000",
-				description: "Manually set the maximum number of levels shown in Workshop Level Set.");*/
+			WorkshopSortingMethod2 = Config.Bind("General",
+				WorkshopSortingKey2,
+				SortingMethod.Recently_Downloaded,
+				new ConfigDescription("Second fallback method for how Workshop Level Set levels are sorted."));
 
-			settingsMenu.ListBox<LevelSelectMenuLogic.SortingMethod>(MenuDisplayMode.MainMenu,
-				"setting:workshop_sorting_method",
-				"WORKSHOP SORTING (1ST)",
-				() => Config.WorkshopSortingMethod,
-				(value) => Config.WorkshopSortingMethod = value,
-				sortDictionary,
-				description: "Choose how Workshop Level Set levels are sorted.");
+			WorkshopReverseSortingMethod2 = Config.Bind("General",
+				WorkshopReverseSortingKey2,
+				false,
+				new ConfigDescription("Reverse the order of the second Workshop sorting method."));
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:workshop_reverse_sorting_method",
-				"REVERSE WORKSHOP SORTING (1ST)",
-				() => Config.WorkshopReverseSortingMethod,
-				(value) => Config.WorkshopReverseSortingMethod = value,
-				description: "Reverse the order of the first Workshop sorting method.");
+			WorkshopSortingMethod3 = Config.Bind("General",
+				WorkshopSortingKey3,
+				SortingMethod.Recently_Downloaded,
+				new ConfigDescription("Third fallback method for how Workshop Level Set levels are sorted."));
 
-			settingsMenu.ListBox<LevelSelectMenuLogic.SortingMethod>(MenuDisplayMode.MainMenu,
-				"setting:workshop_sorting_method2",
-				"WORKSHOP SORTING (2ND)",
-				() => Config.WorkshopSortingMethod2,
-				(value) => Config.WorkshopSortingMethod2 = value,
-				sortDictionary,
-				description: "Second fallback method for how Workshop Level Set levels are sorted.");
+			WorkshopReverseSortingMethod3 = Config.Bind("General",
+				WorkshopReverseSortingKey3,
+				false,
+				new ConfigDescription("Reverse the order of the third Workshop sorting method."));
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:workshop_reverse_sorting_method2",
-				"REVERSE WORKSHOP SORTING (2ND)",
-				() => Config.WorkshopReverseSortingMethod2,
-				(value) => Config.WorkshopReverseSortingMethod2 = value,
-				description: "Reverse the order of the second Workshop sorting method.");
+			EnableTheOtherSideSprintCampaign = Config.Bind("General",
+				EnableOtherCampaignKey,
+				false,
+				new ConfigDescription("Shows extra sprint campaign level sets that aren't normally available (requires unlock)."));
 
-			settingsMenu.ListBox<LevelSelectMenuLogic.SortingMethod>(MenuDisplayMode.MainMenu,
-				"setting:workshop_sorting_method3",
-				"WORKSHOP SORTING (3RD)",
-				() => Config.WorkshopSortingMethod3,
-				(value) => Config.WorkshopSortingMethod3 = value,
-				sortDictionary,
-				description: "Third fallback method for how Workshop Level Set levels are sorted.");
+			//Page 2
+			EnableLevelSetOptionsMenu = Config.Bind("General",
+				EnableLevelSetOptionsKey,
+				true,
+				new ConfigDescription("Enables the Options menu in the Level Set grid view for customizing personal playlists and choosing main menu collections."));
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:workshop_reverse_sorting_method3",
-				"REVERSE WORKSHOP SORTING (3RD)",
-				() => Config.WorkshopReverseSortingMethod3,
-				(value) => Config.WorkshopReverseSortingMethod3 = value,
-				description: "Reverse the order of the third Workshop sorting method.");
+			EnableChooseMainMenuQuickPlaylist = Config.Bind("General",
+				EnableQuickPlaylistKey,
+				true,
+				new ConfigDescription("Allows creating playlists when choosing a Main Menu level (does not allow selecting multiple levels)."));
 
+			EnableChooseMainMenuVisitWorkshopButton = Config.Bind("General",
+				EnableVisitWorkshopKey,
+				true,
+				new ConfigDescription("Enables the 'Visit Workshop page' button in the Advanced level select menu when choosing a Main Menu level."));
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:levelsets_enable_extra_sprint_campaigns",
-				"ENABLE EXTRA SPRINT CAMPAIGNS",
-				() => Config.EnableTheOtherSideSprintCampaign,
-				(value) => Config.EnableTheOtherSideSprintCampaign = value,
-				description: "Shows extra sprint campaign level sets that aren't normally available (requires unlock).");
+			EnableRateWorkshopLevelButton = Config.Bind("General",
+				EnableRateWorkshopKey,
+				true,
+				new ConfigDescription("Re-introduces the 'Rate this level' button in the Advanced level select menu."));
 
+			HideChooseMainMenuUnusedButtons = Config.Bind("General",
+				HideUnusedButtonsKey,
+				true,
+				new ConfigDescription("Hides unused buttons in the Advanced level select menu when choosing a Main Menu level."));
 
-			// Page 2
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:levelsets_enable_levelsets_options_menu",
-				"ENABLE PLAYLIST OPTIONS MENU",
-				() => Config.EnableLevelSetOptionsMenu,
-				(value) => Config.EnableLevelSetOptionsMenu = value,
-				description: "Enables the Options menu in the Level Set grid view for customizing personal playlists and choosing main menu collections.");
+			RandomStartupMainMenu = Config.Bind("General",
+				RandomStartupKey,
+				false,
+				new ConfigDescription("When using a playlist for the main menu, a random level will only be chosen when starting up the game. Otherwise a level will be chosen every time the main menu is loaded."));
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:levelsets_enable_choose_mainmenu_quick_playlist",
-				"ENABLE PLAYLIST MODE FOR MAIN MENUS",
-				() => Config.EnableChooseMainMenuQuickPlaylist,
-				(value) => Config.EnableChooseMainMenuQuickPlaylist = value,
-				description: "Allows creating playlists when choosing a Main Menu level (does not allow selecting multiple levels).");
+			//Steamworks Setup
+			try
+			{
+				SteamworksHelper.Init(); // Handle this here for early error reporting.
+			}
+			catch (Exception ex)
+			{
+				Log.LogError(modName + ": Error during SteamworksHelper.Init()");
+				Log.LogError(ex);
+				throw;
+			}
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:gui_enable_choose_mainmenu_workshop_button",
-				"ENABLE WORKSHOP BUTTON FOR MAIN MENUS",
-				() => Config.EnableChooseMainMenuVisitWorkshopButton,
-				(value) => Config.EnableChooseMainMenuVisitWorkshopButton = value,
-				description: "Enables the 'Visit Workshop page' button in the Advanced level select menu when choosing a Main Menu level.");
+			//Loading Dictionaries
+			State_LastLevelSetIDs = LoadStateLastLevelSetIDs();
+			ProfileMainMenuLevelSets = LoadProfileMainMenus("ProfileMainMenuLevelSets.json");
+			State_LastProfileMainMenuLevels = LoadProfileMainMenus("State_LastProfileMainMenuLevels.json");
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:gui_enable_rate_workshop_level_button",
-				"ENABLE RATE WORKSHOP LEVEL BUTTON",
-				() => Config.EnableRateWorkshopLevelButton,
-				(value) => Config.EnableRateWorkshopLevelButton = value,
-				description: "Re-introduces the 'Rate this level' button in the Advanced level select menu.");
+			//Subscribe to events
+			PlaylistFileRenamed.Subscribe(OnPlaylistFileRenamed);
+			PlaylistFileDeleted.Subscribe(OnPlaylistFileDeleted);
 
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:gui_hide_choose_mainmenu_unused_buttons",
-				"HIDE UNUSED BUTTONS FOR MAIN MENUS",
-				() => Config.HideChooseMainMenuUnusedButtons,
-				(value) => Config.HideChooseMainMenuUnusedButtons = value,
-				description: "Hides unused buttons in the Advanced level select menu when choosing a Main Menu level.");
-
-			settingsMenu.CheckBox(MenuDisplayMode.MainMenu,
-				"setting:random_startup_mainmenu",
-				"DECIDE MAIN MENU ON STARTUP",
-				() => Config.RandomStartupMainMenu,
-				(value) => Config.RandomStartupMainMenu = value,
-				description: "When using a playlist for the main menu, a random level will only be chosen when starting up the game. Otherwise a level will be chosen every time the main menu is loaded.");
-
-			Menus.AddNew(MenuDisplayMode.MainMenu, settingsMenu,
-				Mod.FriendlyName.ToUpper(),
-				"Settings for level selection limits, filtering, sorting, and organization.");
+			Log.LogInfo(modName + ": Initializing...");
+			harmony.PatchAll();
+			Log.LogInfo(modName + ": Initialized!");
 		}
 
+        #region Save/Load
+
+        public void SaveDictionary(Dictionary<string, string> dic, string fileName)
+        {
+			string rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+			DataWriterSettings st = new DataWriterSettings { PrettyPrint = true };
+			JsonWriter writer = new JsonWriter(st);
+			try
+			{
+				using (var sw = new StreamWriter(Path.Combine(rootDirectory, fileName), false))
+				{
+					sw.WriteLine(writer.Write(dic));
+				}
+			}
+			catch (Exception e)
+			{
+				Log.LogWarning(e);
+			}
+		}
+
+		public void SaveDictionary(Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>> dic)
+        {
+			string fileName = "LevelSetOptionsMenus.json";
+			string rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+			DataWriterSettings st = new DataWriterSettings { PrettyPrint = true };
+			JsonWriter writer = new JsonWriter(st);
+			try
+			{
+				using (var sw = new StreamWriter(Path.Combine(rootDirectory, fileName), false))
+				{
+					sw.WriteLine(writer.Write(dic));
+				}
+			}
+			catch (Exception e)
+			{
+				Log.LogWarning(e);
+			}
+		}
+
+		public void SaveDictionary(Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>> dic)
+        {
+			string fileName = "State_LastLevelSetIDs.json";
+			string rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+			DataWriterSettings st = new DataWriterSettings { PrettyPrint = true };
+			JsonWriter writer = new JsonWriter(st);
+			try
+			{
+				using (var sw = new StreamWriter(Path.Combine(rootDirectory, fileName), false))
+				{
+					sw.WriteLine(writer.Write(dic));
+				}
+			}
+			catch (Exception e)
+			{
+				Log.LogWarning(e);
+			}
+		}
+
+		public Dictionary<string, string> LoadProfileMainMenus(string fileName)
+        {
+			string rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+
+			try
+			{
+				using (var sr = new StreamReader(Path.Combine(rootDirectory, fileName)))
+				{
+					string json = sr.ReadToEnd();
+					JsonReader reader = new JsonReader();
+					Dictionary<string, string> pMainMenuDictionary = reader.Read<Dictionary<string, string>>(json);
+
+					return pMainMenuDictionary;
+				}
+			}
+			catch (DirectoryNotFoundException ex)
+			{
+				Log.LogWarning("Failed to load car randomization weights due to the directory not existing. \nNew weights will be saved when necessary.");
+				return new Dictionary<string, string>();
+			}
+			catch (Exception ex)
+			{
+				Log.LogWarning("Failed to load car randomization weights");
+				Log.LogWarning(ex);
+				return new Dictionary<string, string>();
+			}
+		}
+
+		public Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>> LoadLevelSetOptions()
+        {
+			string fileName = "LevelSetOptionsMenus.json";
+			string rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+
+			try
+			{
+				using (var sr = new StreamReader(Path.Combine(rootDirectory, fileName)))
+				{
+					string json = sr.ReadToEnd();
+					JsonReader reader = new JsonReader();
+					Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>> levelSetOptionsDictionary = reader.Read<Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>>>(json);
+
+					return levelSetOptionsDictionary;
+				}
+			}
+			catch (DirectoryNotFoundException ex)
+			{
+				Log.LogWarning("Failed to load car randomization weights due to the directory not existing. \nNew weights will be saved when necessary.");
+				return new Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>>();
+			}
+			catch (Exception ex)
+			{
+				Log.LogWarning("Failed to load car randomization weights");
+				Log.LogWarning(ex);
+				return new Dictionary<LevelSetMenuType, Dictionary<bool, LevelSetOptionsMenu>>();
+			}
+		}
+
+		public Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>> LoadStateLastLevelSetIDs()
+        {
+			string fileName = "State_LastLevelSetIDs.json";
+			string rootDirectory = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+
+			try
+			{
+				using (var sr = new StreamReader(Path.Combine(rootDirectory, fileName)))
+				{
+					string json = sr.ReadToEnd();
+					JsonReader reader = new JsonReader();
+					Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>> sLastLevelSetDictionary = reader.Read<Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>>>(json);
+
+					return sLastLevelSetDictionary;
+				}
+			}
+			catch (DirectoryNotFoundException ex)
+			{
+				Log.LogWarning("Failed to load car randomization weights due to the directory not existing. \nNew weights will be saved when necessary.");
+				return new Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>>();
+			}
+			catch (Exception ex)
+			{
+				Log.LogWarning("Failed to load car randomization weights");
+				Log.LogWarning(ex);
+				return new Dictionary<LevelSelectMenuAbstract.DisplayType, Dictionary<GameModeID, string>>();
+			}
+		}
+
+		#endregion
+
 		#region Helpers
+
+		public SortingMethod[] GetWorkshopSortingMethods()
+		{
+			return new SortingMethod[]
+			{
+				WorkshopSortingMethod.Value,
+				WorkshopSortingMethod2.Value,
+				WorkshopSortingMethod3.Value,
+			};
+		}
+
+		public bool[] GetWorkshopReverseSortingMethods()
+		{
+			return new bool[]
+			{
+				WorkshopReverseSortingMethod.Value,
+				WorkshopReverseSortingMethod2.Value,
+				WorkshopReverseSortingMethod3.Value,
+			};
+		}
+
+		public string GetStateLastLevelSetID(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID)
+		{
+			if (State_LastLevelSetIDs.TryGetValue(displayType, out var lastPlaylists_mode))
+			{
+				if (lastPlaylists_mode.TryGetValue(modeID, out string levelSetID))
+				{
+					return levelSetID;
+				}
+			}
+			return null;
+		}
+
+		public void SetStateLastLevelSetID(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID, string levelSetID)
+		{
+			var lastPlaylists_display = State_LastLevelSetIDs;
+			if (!lastPlaylists_display.TryGetValue(displayType, out Dictionary<GameModeID, string> lastPlaylists_mode))
+			{
+				lastPlaylists_mode = new Dictionary<GameModeID, string>();
+				lastPlaylists_mode[modeID] = levelSetID;
+				lastPlaylists_display[displayType] = lastPlaylists_mode;
+			}
+			//Line was previous here but that didn't make sense to me, moved it, will test for errors
+			//lastPlaylists_mode[modeID] = levelSetID;
+			SaveDictionary(lastPlaylists_display); // auto save
+		}
+
+		public string GetProfileMainMenuRelativePathID(string profileName)
+		{
+			if (ProfileMainMenuLevelSets.TryGetValue(profileName, out string relativePathID))
+			{
+				return relativePathID;
+			}
+			return null;
+		}
+
+		public bool SetProfileMainMenuRelativePathID(string profileName, string relativePathID)
+		{
+			var profileMainMenuLevelSets = ProfileMainMenuLevelSets;
+			if (profileMainMenuLevelSets.TryGetValue(profileName, out string oldRelativePathID))
+			{
+				if (relativePathID == oldRelativePathID)
+				{
+					return false;
+				}
+			}
+			// Clear state for last level used.
+			SetStateLastMainMenuLevelRelativePath(profileName, null);
+			profileMainMenuLevelSets[profileName] = relativePathID;
+			SaveDictionary(profileMainMenuLevelSets, "ProfileMainMenuLevelSets.json"); // auto save
+			return true;
+		}
+
+		public string GetStateLastMainMenuLevelRelativePath(string profileName)
+		{
+			if (State_LastProfileMainMenuLevels.TryGetValue(profileName, out string relativeLevelPath))
+			{
+				return relativeLevelPath;
+			}
+			return null;
+		}
+
+		public void SetStateLastMainMenuLevelRelativePath(string profileName, string relativeLevelPath)
+		{
+			State_LastProfileMainMenuLevels[profileName] = relativeLevelPath;
+			SaveDictionary(State_LastProfileMainMenuLevels, "State_LastProfileMainMenuLevels.json"); // auto save
+		}
+
+		private void OnPlaylistFileRenamed(PlaylistFileRenamed.Data data)
+		{
+			var lastPlaylists_display = State_LastLevelSetIDs;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var displayPair in lastPlaylists_display.ToArray())
+			{
+				foreach (var modePair in displayPair.Value.ToArray())
+				{
+					if (modePair.Value == data.oldLevelSetID)
+					{
+						lastPlaylists_display[displayPair.Key][modePair.Key] = data.newLevelSetID;
+					}
+				}
+			}
+
+			var profileMainMenuLevelSets = ProfileMainMenuLevelSets;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var profilePair in profileMainMenuLevelSets.ToArray())
+			{
+				if (string.Equals(profilePair.Value, data.oldLevelSetID, StringComparison.InvariantCultureIgnoreCase))
+				{
+					profileMainMenuLevelSets[profilePair.Key] = data.playlist.GetRelativePathID();
+				}
+			}
+
+			//TODO: When LevelSetOptions dictionary gets added, enumerate over and rename here too.
+
+			SaveDictionary(lastPlaylists_display);
+			SaveDictionary(profileMainMenuLevelSets, "ProfileMainMenuLevelSets.json"); // auto save
+		}
+
+		private void OnPlaylistFileDeleted(PlaylistFileDeleted.Data data)
+		{
+			var lastPlaylists_display = State_LastLevelSetIDs;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var displayPair in lastPlaylists_display.ToArray())
+			{
+				foreach (var modePair in displayPair.Value.ToArray())
+				{
+					if (modePair.Value == data.levelSetID)
+					{
+						lastPlaylists_display[displayPair.Key][modePair.Key] = null;
+					}
+				}
+			}
+
+			var profileMainMenuLevelSets = ProfileMainMenuLevelSets;
+			// Use ToArray to enumerate with foreach and allow updating values.
+			foreach (var profilePair in profileMainMenuLevelSets.ToArray())
+			{
+				if (string.Equals(profilePair.Value, data.levelSetID, StringComparison.InvariantCultureIgnoreCase))
+				{
+					profileMainMenuLevelSets[profilePair.Key] = null;
+				}
+			}
+
+			//TODO: When LevelSetOptions dictionary gets added, enumerate over and delete here too.
+
+			SaveDictionary(profileMainMenuLevelSets, "ProfileMainMenuLevelSets.json"); // auto save
+		}
 
 		public void ShowLevelSetOptionsMenu(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID, LevelPlaylist playlist, Action onDeletePlaylist)
 		{
 			var menuType = playlist.GetLevelSetMenuType();
 			bool isMainMenu = displayType == LevelSelectMenuAbstract.DisplayType.ChooseMainMenuLevel;
-			this.LevelSetOptionsMenus[menuType][isMainMenu].Show(displayType, modeID, playlist, onDeletePlaylist);
+			LevelSetOptionsMenus[menuType][isMainMenu].Show(displayType, modeID, playlist, onDeletePlaylist);
 		}
 
 		#endregion

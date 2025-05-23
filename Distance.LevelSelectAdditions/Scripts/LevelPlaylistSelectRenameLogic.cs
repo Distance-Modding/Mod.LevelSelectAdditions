@@ -10,10 +10,10 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 		private void Awake()
 		{
-			this.levelSelectMenu_ = this.GetComponentInParent<LevelSelectMenuLogic>();
-			if (!this.levelSelectMenu_)
+			levelSelectMenu_ = GetComponentInParent<LevelSelectMenuLogic>();
+			if (!levelSelectMenu_)
 			{
-				Mod.Instance.Logger.Error(nameof(LevelSelectMenuLogic) + " component not found");
+				Mod.Log.LogError(nameof(LevelSelectMenuLogic) + " component not found");
 				return;
 			}
 
@@ -38,10 +38,10 @@ namespace Distance.LevelSelectAdditions.Scripts
 		private void SetupPlaylistRenameButton()
 		{
 			// Full path: "LevelSelectRoot/Panel - Level Select/Anchor - Center/Left Panel/PlaylistButtonGroup2"
-			GameObject playlistButtonGroup2 = this.transform.Find("Panel - Level Select/Anchor - Center/Left Panel/PlaylistButtonGroup2")?.gameObject;
+			GameObject playlistButtonGroup2 = transform.Find("Panel - Level Select/Anchor - Center/Left Panel/PlaylistButtonGroup2")?.gameObject;
 			if (!playlistButtonGroup2)
 			{
-				Mod.Instance.Logger.Error("\"PlaylistButtonGroup2\" game object not found");
+				Mod.Log.LogError("\"PlaylistButtonGroup2\" game object not found");
 				return;
 			}
 
@@ -60,12 +60,12 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 			if (!saveButton || !loadButton)
 			{
-				Mod.Instance.Logger.Error("\"SaveButton\" and/or \"LoadButton\" component not found");
+				Mod.Log.LogError("\"SaveButton\" and/or \"LoadButton\" component not found");
 				return;
 			}
 
 			// Create a copy of LoadButton to be our new rename button.
-			var renameButton = UnityEngine.Object.Instantiate(loadButton, loadButton.transform.parent);
+			var renameButton = Instantiate(loadButton, loadButton.transform.parent);
 			renameButton.name = "PlaylistRenameButton"; // Less ambiguous name.
 
 			// Reposition the buttons (to the left) to make room for our new button.
@@ -123,12 +123,12 @@ namespace Distance.LevelSelectAdditions.Scripts
 
 		private void OnPlaylistRenameButtonClicked()
 		{
-			this.levelSelectMenu_.tempPlaylist_.PromptRename(OnPlaylistRenameSubmit, null, false);
+			levelSelectMenu_.tempPlaylist_.PromptRename(OnPlaylistRenameSubmit, null, false);
 		}
 
 		private void OnPlaylistRenameSubmit(bool changed)
 		{
-			this.levelSelectMenu_.UpdateQuickPlaylistText();
+			levelSelectMenu_.UpdateQuickPlaylistText();
 		}
 	}
 }

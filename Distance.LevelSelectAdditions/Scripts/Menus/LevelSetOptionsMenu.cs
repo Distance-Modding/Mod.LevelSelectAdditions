@@ -1,4 +1,4 @@
-﻿using Centrifuge.Distance.GUI.Menu;
+﻿using DistanceModConfigurationManager.DistanceGUI.Menu;
 using Distance.LevelSelectAdditions.Extensions;
 using Distance.LevelSelectAdditions.Helpers;
 using System;
@@ -8,8 +8,8 @@ using SortingMethod = LevelSelectMenuLogic.SortingMethod;
 
 namespace Distance.LevelSelectAdditions.Scripts.Menus
 {
-	// Use `CentrifugeMenuAbstract` because it already handles assinging the `menuBlueprint_` field.
-	public class LevelSetOptionsMenu : CentrifugeMenuAbstract
+	// Use `ModdingMenuAbstract` because it already handles assinging the `menuBlueprint_` field.
+	public class LevelSetOptionsMenu : ModdingMenuAbstract
 	{
 		protected GameModeID modeID_;
 		protected LevelSelectMenuAbstract.DisplayType displayType_;
@@ -18,13 +18,13 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		protected Action onDeletePlaylist_;
 
 
-		public override string Name_ => "custommenu.mod." + Mod.Name.ToLower() + "." + nameof(LevelSetOptionsMenu) + "." + this.LevelSetMenuType.ToString().ToLower() + ((this.IsMainMenu) ? "_mainmenu" : "");
+		public override string Name_ => "custommenu.mod." + Mod.modName.ToLower() + "." + nameof(LevelSetOptionsMenu) + "." + LevelSetMenuType.ToString().ToLower() + ((IsMainMenu) ? "_mainmenu" : "");
 
 		public override string Title
 		{
 			get
 			{
-				switch (this.LevelSetMenuType)
+				switch (LevelSetMenuType)
 				{
 				case LevelSetMenuType.Basic:
 					return "Level Set Options";
@@ -45,29 +45,29 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 
 		public bool IsMainMenu { get; internal set; }
 
-		public GameObject TitleLabel => this.PanelObject_.transform.Find("MenuTitleTemplate/UILabel - Title").gameObject;
+		public GameObject TitleLabel => PanelObject_.transform.Find("MenuTitleTemplate/UILabel - Title").gameObject;
 		
-		public GameObject DescriptionLabel => this.PanelObject_.transform.Find("MenuTitleTemplate/UILabel - Description").gameObject;
+		public GameObject DescriptionLabel => PanelObject_.transform.Find("MenuTitleTemplate/UILabel - Description").gameObject;
 
 
 		public void Show(LevelSelectMenuAbstract.DisplayType displayType, GameModeID modeID, LevelPlaylist playlist, Action onDeletePlaylist)
 		{
 			try
 			{
-				this.displayType_ = displayType;
-				this.modeID_ = modeID;
-				this.playlist_ = playlist;
-				this.onPopBack_ = null;
-				this.onDeletePlaylist_ = onDeletePlaylist;
+				displayType_ = displayType;
+				modeID_ = modeID;
+				playlist_ = playlist;
+				onPopBack_ = null;
+				onDeletePlaylist_ = onDeletePlaylist;
 
-				this.UpdateMenuTitle();
+				UpdateMenuTitle();
 
-				Mod.Instance.OptionsMenu.DisplaySubmenu(this.Name_);
+				Mod.Instance.OptionsMenu.DisplaySubmenu(Name_);
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in RenameFile()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in RenameFile()");
+				Mod.Log.LogError(ex);
 				throw;
 			}
 		}
@@ -76,10 +76,10 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		//  since we don't want this for a menu accessed in level select.
 		public void RemoveFancyFadeIn()
 		{
-			if (this.PanelObject_.HasComponent<UIExFancyFadeInMenu>())
+			if (PanelObject_.HasComponent<UIExFancyFadeInMenu>())
 			{
 				//Mod.Instance.Logger.Debug("Removed UIExFancyFadeInMenu from " + this.GetType().Name);
-				this.PanelObject_.RemoveComponents<UIExFancyFadeInMenu>();
+				PanelObject_.RemoveComponents<UIExFancyFadeInMenu>();
 			}
 		}
 
@@ -87,26 +87,26 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		//  so we can't set the real title then before knowing what type of submenu it is.
 		protected void UpdateMenuTitle()
 		{
-			UILabel titleLabelObject = this.TitleLabel.GetComponent<UILabel>();
-			(this.menu_.menuTitleLabel_ ?? titleLabelObject).text = this.Title;
+			UILabel titleLabelObject = TitleLabel.GetComponent<UILabel>();
+			(menu_.menuTitleLabel_ ?? titleLabelObject).text = Title;
 		}
 
 		// Displays the playlist name below the menu title.
 		protected void UpdateMenuDescription()
 		{
 			Color baseColor = Color.white;
-			var playlistData = this.playlist_.GetComponent<LevelPlaylistCompoundData>();
+			var playlistData = playlist_.GetComponent<LevelPlaylistCompoundData>();
 			if (playlistData?.PlaylistEntry != null)
 			{
 				baseColor = playlistData.PlaylistEntry.Color_;
 			}
 
-			UILabel titleLabelObject = this.TitleLabel.GetComponent<UILabel>();
-			UILabel descriptionLabelObject = this.DescriptionLabel.GetComponent<UILabel>();
+			UILabel titleLabelObject = TitleLabel.GetComponent<UILabel>();
+			UILabel descriptionLabelObject = DescriptionLabel.GetComponent<UILabel>();
 
-			this.DescriptionLabel?.SetActive(true);
+			DescriptionLabel?.SetActive(true);
 
-			descriptionLabelObject.text = this.playlist_.Name_;
+			descriptionLabelObject.text = playlist_.Name_;
 			descriptionLabelObject.color = baseColor;
 
 			// Use same font as playlist entries in Level Sets menu.
@@ -120,20 +120,20 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 
 		public override void OnPanelPop()
 		{
-			this.onPopBack_?.Invoke();
+			onPopBack_?.Invoke();
 		}
 
 		public override void Update()
 		{
-			if (this.PanelObject_ != null && this.PanelObject_.activeInHierarchy)
+			if (PanelObject_ != null && PanelObject_.activeInHierarchy)
 			{
-				this.UpdateVirtual();
+				UpdateVirtual();
 			}
 		}
 
 		public override void UpdateVirtual()
 		{
-			this.UpdateMenuDescription();
+			UpdateMenuDescription();
 		}
 
 		public override void InitializeVirtual()
@@ -141,21 +141,21 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 			// Apparently we can't just call this multiple times with different settings.
 			// Menus have been split into all possible categories to prevent issues.
 
-			if (this.IsMainMenu)
+			if (IsMainMenu)
 			{
 				const string SetAsMainMenu = "SET AS MAIN MENU";
 
-				this.TweakAction(SetAsMainMenu, //"SET AS MAIN MENU" + ((isCurrent) ? " (CURRENT)" : ""),
-					this.OnSetAsMainMenuClicked,
+				TweakAction(SetAsMainMenu, //"SET AS MAIN MENU" + ((isCurrent) ? " (CURRENT)" : ""),
+					OnSetAsMainMenuClicked,
 					"Use this playlist as the main menu. A level will be chosen from the level set based on your Main Menu playlist selection options.");
 
 				// Change the label text to show whether this is the currently selected main menu level set.
-				string relativePathID = this.playlist_.GetRelativePathID();
+				string relativePathID = playlist_.GetRelativePathID();
 				Profile profile = G.Sys.ProfileManager_.CurrentProfile_;
-				string currentRelativePathID = Mod.Instance.Config.GetProfileMainMenuRelativePathID(profile.Name_);
+				string currentRelativePathID = Mod.Instance.GetProfileMainMenuRelativePathID(profile.Name_);
 				bool isCurrent = relativePathID == currentRelativePathID;
 
-				var actionLabel = this.menu_.actions_[SetAsMainMenu].gameObject.GetComponentInChildren<UILabel>();
+				var actionLabel = menu_.actions_[SetAsMainMenu].gameObject.GetComponentInChildren<UILabel>();
 				actionLabel.text = SetAsMainMenu + ((isCurrent) ? " (CURRENT)" : "");
 			}
 
@@ -227,22 +227,22 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 				*/
 			}
 
-			if (this.LevelSetMenuType == LevelSetMenuType.Playlist)
+			if (LevelSetMenuType == LevelSetMenuType.Playlist)
 			{
-				this.TweakAction("CHANGE DISPLAY NAME",
-					this.OnRenamePlaylistClicked,
+				TweakAction("CHANGE DISPLAY NAME",
+					OnRenamePlaylistClicked,
 					"Change the display name of this playlist.");
 
-				this.TweakAction("CHANGE DISPLAY COLOR",
-					this.OnRecolorPlaylistClicked,
+				TweakAction("CHANGE DISPLAY COLOR",
+					OnRecolorPlaylistClicked,
 					"Change the display color of this playlist. Submit an empty input to remove the color.");
 
-				this.TweakAction("RENAME PLAYLIST FILE",
-					this.OnRenameFileClicked,
+				TweakAction("RENAME PLAYLIST FILE",
+					OnRenameFileClicked,
 					"Change the filename of this playlist, which affects sorting order.");
 
-				this.TweakAction("DELETE PLAYLIST FILE",
-					this.OnDeleteFileClicked,
+				TweakAction("DELETE PLAYLIST FILE",
+					OnDeleteFileClicked,
 					"Delete this playlist from the game.");
 			}
 		}
@@ -256,8 +256,8 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in OnRenamePlaylistClicked()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in OnRenamePlaylistClicked()");
+				Mod.Log.LogError(ex);
 			}
 		}
 
@@ -265,12 +265,12 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		{
 			try
 			{
-				this.playlist_.PromptRecolor(null, null, true);
+				playlist_.PromptRecolor(null, null, true);
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in OnRecolorPlaylistClicked()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in OnRecolorPlaylistClicked()");
+				Mod.Log.LogError(ex);
 			}
 		}
 
@@ -278,12 +278,12 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		{
 			try
 			{
-				this.playlist_.PromptRenameFile(null, null);
+				playlist_.PromptRenameFile(null, null);
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in OnRenameFileClicked()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in OnRenameFileClicked()");
+				Mod.Log.LogError(ex);
 			}
 		}
 
@@ -291,12 +291,12 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 		{
 			try
 			{
-				this.playlist_.PromptDeleteFile(OnDeleteFileSubmit, true);
+				playlist_.PromptDeleteFile(OnDeleteFileSubmit, true);
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in OnDeleteFileClicked()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in OnDeleteFileClicked()");
+				Mod.Log.LogError(ex);
 			}
 		}
 
@@ -305,18 +305,18 @@ namespace Distance.LevelSelectAdditions.Scripts.Menus
 			try
 			{
 				G.Sys.MenuPanelManager_.Pop();
-				this.onDeletePlaylist_?.Invoke();
+				onDeletePlaylist_?.Invoke();
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in OnDeleteFileSubmit()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in OnDeleteFileSubmit()");
+				Mod.Log.LogError(ex);
 			}
 		}
 
 		private void OnSetAsMainMenuClicked()
 		{
-			MainMenuLevelSetHelper.SetMainMenuLevelSet(this.playlist_);
+			MainMenuLevelSetHelper.SetMainMenuLevelSet(playlist_);
 			//Profile profile = G.Sys.ProfileManager_.CurrentProfile_;
 			//Mod.Instance.Config.SetProfileMainMenuRelativePathID(profile.Name_, this.playlist_.GetRelativePathID());
 			G.Sys.GameManager_.GoToMainMenu(GameManager.OpenOnMainMenuInit.Garage);

@@ -1,5 +1,4 @@
-﻿using Centrifuge.Distance.Data;
-using Centrifuge.Distance.Game;
+﻿using DistanceModConfigurationManager.Game;
 using Distance.LevelSelectAdditions.Events;
 using Distance.LevelSelectAdditions.Helpers;
 using Distance.LevelSelectAdditions.Scripts;
@@ -329,8 +328,8 @@ namespace Distance.LevelSelectAdditions.Extensions
 
 				if (playlist.Name_ != origName)
 				{
-					Mod.Instance.Logger.Debug($"Old name: \"{origName}\"");
-					Mod.Instance.Logger.Debug($"New name: \"{playlist.Name_}\"");
+					Mod.Log.LogDebug($"Old name: \"{origName}\"");
+					Mod.Log.LogDebug($"New name: \"{playlist.Name_}\"");
 					if (autoSave)
 					{
 						playlist.Save();
@@ -342,14 +341,14 @@ namespace Distance.LevelSelectAdditions.Extensions
 				}
 				else
 				{
-					Mod.Instance.Logger.Debug("No playlist name change");
+					Mod.Log.LogDebug("No playlist name change");
 					return false;
 				}
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in Rename()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in Rename()");
+				Mod.Log.LogError(ex);
 				return false;
 				//throw;
 			}
@@ -426,10 +425,10 @@ namespace Distance.LevelSelectAdditions.Extensions
 					string dbgOldBaseColor = ((hasColor && useOldBase) ? "#"+NGUIText.EncodeColor32(oldBaseColor) : "N/A      ");
 					string dbgNewColor     =                             "#"+NGUIText.EncodeColor32(newColor);
 					string dbgNewBaseColor = (useNewBase               ? "#"+NGUIText.EncodeColor32(newBaseColor) : "N/A      ");
-					Mod.Instance.Logger.Debug($"Old color: {dbgOldColor}, base: {dbgOldBaseColor}");
-					Mod.Instance.Logger.Debug($"New color: {dbgNewColor}, base: {dbgNewBaseColor}");
-					Mod.Instance.Logger.Debug($"Old name: \"{origName}\"");
-					Mod.Instance.Logger.Debug($"New name: \"{playlist.Name_}\"");
+					Mod.Log.LogDebug($"Old color: {dbgOldColor}, base: {dbgOldBaseColor}");
+					Mod.Log.LogDebug($"New color: {dbgNewColor}, base: {dbgNewBaseColor}");
+					Mod.Log.LogDebug($"Old name: \"{origName}\"");
+					Mod.Log.LogDebug($"New name: \"{playlist.Name_}\"");
 					if (autoSave)
 					{
 						playlist.Save();
@@ -441,14 +440,14 @@ namespace Distance.LevelSelectAdditions.Extensions
 				}
 				else
 				{
-					Mod.Instance.Logger.Debug("No playlist color change");
+					Mod.Log.LogDebug("No playlist color change");
 					return false;
 				}
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in Recolor()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in Recolor()");
+				Mod.Log.LogError(ex);
 				return false;
 				//throw;
 			}
@@ -468,7 +467,7 @@ namespace Distance.LevelSelectAdditions.Extensions
 					newFileName += ".xml";
 					if (newFileName == Resource.GetFileName(playlist.GenerateFilePath(false)))
 					{
-						Mod.Instance.Logger.Debug("No playlist filename change");
+						Mod.Log.LogDebug("No playlist filename change");
 						return false;
 					}
 
@@ -483,8 +482,8 @@ namespace Distance.LevelSelectAdditions.Extensions
 								string oldFilePath = playlistData.FilePath;
 								string oldLevelSetID = playlist.GetLevelSetID();
 
-								Mod.Instance.Logger.Debug($"Moving: {playlist.Name_} \"{playlistData.FilePath}\"");
-								Mod.Instance.Logger.Debug($"To:     {new string(' ', playlist.Name_.Length)} \"{newFilePath}\"");
+								Mod.Log.LogDebug($"Moving: {playlist.Name_} \"{playlistData.FilePath}\"");
+								Mod.Log.LogDebug($"To:     {new string(' ', playlist.Name_.Length)} \"{newFilePath}\"");
 								FileEx.Move(playlistData.FilePath, newFilePath);
 								playlistData.FilePath = newFilePath;
 
@@ -512,14 +511,14 @@ namespace Distance.LevelSelectAdditions.Extensions
 				}
 				else
 				{
-					Mod.Instance.Logger.Warning("Attempting to call RenameFile() on resources playlist");
+					Mod.Log.LogWarning("Attempting to call RenameFile() on resources playlist");
 					return false;
 				}
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in RenameFile()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in RenameFile()");
+				Mod.Log.LogError(ex);
 				return false;
 				//throw;
 			}
@@ -539,11 +538,11 @@ namespace Distance.LevelSelectAdditions.Extensions
 						string oldLevelSetID = playlist.GetLevelSetID();
 						string oldName = playlist.Name_;
 
-						Mod.Instance.Logger.Debug($"Deleting:   {playlist.Name_} \"{playlistData.FilePath}\"");
+						Mod.Log.LogDebug($"Deleting:   {playlist.Name_} \"{playlistData.FilePath}\"");
 						FileEx.Delete(playlistData.FilePath);
 						if (destroyObject)
 						{
-							Mod.Instance.Logger.Debug($"Destroying: {playlist.Name_}");
+							Mod.Log.LogDebug($"Destroying: {playlist.Name_}");
 							playlist.Destroy(); // Should we really call destroy here?
 							UnityEngine.Object.DestroyImmediate(playlist.gameObject);
 						}
@@ -560,14 +559,14 @@ namespace Distance.LevelSelectAdditions.Extensions
 				}
 				else
 				{
-					Mod.Instance.Logger.Warning("Attempting to call DeleteFile() on resources playlist");
+					Mod.Log.LogWarning("Attempting to call DeleteFile() on resources playlist");
 					return false;
 				}
 			}
 			catch (Exception ex)
 			{
-				Mod.Instance.Logger.Error("Error in DeleteFile()");
-				Mod.Instance.Logger.Exception(ex);
+				Mod.Log.LogError("Error in DeleteFile()");
+				Mod.Log.LogError(ex);
 				return false;
 				//throw;
 			}
@@ -708,7 +707,7 @@ namespace Distance.LevelSelectAdditions.Extensions
 			}
 			else
 			{
-				Mod.Instance.Logger.Error($"Cannot rename playlist \"{playlist.Name_}\" because it does not have a FilePath attached");
+				Mod.Log.LogError($"Cannot rename playlist \"{playlist.Name_}\" because it does not have a FilePath attached");
 			}
 		}
 
@@ -726,7 +725,7 @@ namespace Distance.LevelSelectAdditions.Extensions
 						if (notFound)
 						{
 							MessageBox.Create("Could not delete playlist, file not found", "ERROR")
-								.SetButtons(MessageButtons.Ok)
+								.SetButtons(MessagePanelLogic.ButtonType.Ok)
 								.Show();
 							return;
 						}
@@ -738,20 +737,20 @@ namespace Distance.LevelSelectAdditions.Extensions
 				{
 					// Double-nest confirmation, since we're placing this in a *supposedly* more commonly-used menu.
 					MessageBox.Create("Are you [FF2B19]really[-] sure that you want to permanently delete this playlist!?", "ARE YOU SURE?")
-						.SetButtons(MessageButtons.YesNo)
+						.SetButtons(MessagePanelLogic.ButtonType.YesNo)
 						.OnConfirm(ActuallyDeleteFile)
 						.Show();
 				}
 
 				// TODO: Do we need to double-nest confirmation?
 				MessageBox.Create($"Are you sure you want to remove this playlist: [u]{Resource.GetFileName(playlistData.FilePath)}[/u]?", "DELETE PLAYLIST")
-					.SetButtons(MessageButtons.YesNo)
+					.SetButtons(MessagePanelLogic.ButtonType.YesNo)
 					.OnConfirm(OnDeleteFileConfirm)
 					.Show();
 			}
 			else
 			{
-				Mod.Instance.Logger.Error($"Cannot delete playlist \"{playlist.Name_}\" because it does not have a FilePath attached");
+				Mod.Log.LogError($"Cannot delete playlist \"{playlist.Name_}\" because it does not have a FilePath attached");
 			}
 		}
 

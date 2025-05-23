@@ -23,8 +23,8 @@ namespace Distance.LevelSelectAdditions.Events
 				this.playlist = playlist;
 				this.oldFilePath = oldFilePath;
 				this.oldLevelSetID = oldLevelSetID;
-				this.newFilePath = playlist.GetComponent<LevelPlaylistCompoundData>().FilePath;
-				this.newLevelSetID = playlist.GetLevelSetID();
+				newFilePath = playlist.GetComponent<LevelPlaylistCompoundData>().FilePath;
+				newLevelSetID = playlist.GetLevelSetID();
 			}
 		}
 	}
